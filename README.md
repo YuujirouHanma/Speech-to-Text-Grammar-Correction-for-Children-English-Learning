@@ -10,16 +10,12 @@ This project implements an **AI-based monitoring system for children’s English
 
 The system converts children's speech into text and automatically corrects grammatical errors to provide **real-time learning feedback**.
 
----
-
 ## 🎯 Objectives
 
 * Build an integrated pipeline for **speech transcription + grammar correction**
 * Compare **Custom Seq2Seq Transformer vs Pretrained T5**
 * Evaluate performance using **BLEU, METEOR, ROUGE, Exact Match**
 * Support **real-time English learning monitoring for children**
-
----
 
 ## 🧠 System Architecture
 
@@ -36,8 +32,6 @@ Main Components:
 * Grammar Correction Model (T5 / Custom Seq2Seq)
 * Gradio Web Interface
 
----
-
 ## 🚀 Features
 
 ✅ Real-time speech transcription
@@ -48,8 +42,6 @@ Main Components:
 ✅ Interactive Web UI (Gradio)
 ✅ Multi-scenario training pipeline
 ✅ Educational feedback potential
-
----
 
 ## 🛠 Tech Stack
 
@@ -79,16 +71,12 @@ Main Components:
 * HappyTransformer
 * Gradio
 
----
-
 ## 📊 Dataset
 
 | Dataset                    | Source      | Usage                        |
 | -------------------------- | ----------- | ---------------------------- |
 | Grammar Correction Dataset | Kaggle      | Supervised training          |
 | JFLEG                      | HuggingFace | Fluency correction benchmark |
-
----
 
 ## 🧪 Experiment Scenarios
 
@@ -98,8 +86,6 @@ Main Components:
 4️⃣ Direct Training on JFLEG
 5️⃣ Ensemble Pseudo Labeling + Heavy Augmentation
 
----
-
 ## 📈 Evaluation Metrics
 
 * BLEU
@@ -107,8 +93,6 @@ Main Components:
 * ROUGE-1 / ROUGE-2 / ROUGE-L
 * Exact Match
 * Precision / Recall / F1 (Error Type Classification)
-
----
 
 ## 🏆 Key Results
 
@@ -125,8 +109,6 @@ Model: **T5 + Pseudo Labeling + Augmentation**
 
 📌 T5 consistently outperformed Custom Seq2Seq across all scenarios.
 
----
-
 ## 🎤 Speech-to-Text Performance Insights
 
 ### Best Conditions
@@ -142,8 +124,6 @@ Model: **T5 + Pseudo Labeling + Augmentation**
 * Gemini Flash 2.0 (Balanced speed & accuracy)
 * Whisper (Good local baseline)
 
----
-
 ## 💡 Educational Impact
 
 This system can:
@@ -153,8 +133,6 @@ This system can:
 * Support teachers in monitoring student progress
 * Reduce manual correction workload
 
----
-
 ## 📦 Installation
 
 ```bash
@@ -162,8 +140,6 @@ git clone https://github.com/yourusername/your-repo-name.git
 cd your-repo-name
 pip install -r requirements.txt
 ```
-
----
 
 ## ▶ Usage
 
@@ -194,8 +170,6 @@ project/
 └ README.md
 ```
 
----
-
 ## 🔬 Future Work
 
 * Fine-tune STT using children speech dataset
@@ -203,11 +177,7 @@ project/
 * Add educational feedback explanation system
 * Real classroom user testing
 
----
-
 ## 👨‍💻 Author
 
-Your Name
-
----
+Jeremia Kevin Alexander Jagardo Malau
 
