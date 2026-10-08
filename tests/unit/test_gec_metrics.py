@@ -46,7 +46,9 @@ class TableScorer(gec_metrics.GecScorer):
     def __init__(self, table: dict[tuple[str, str], dict[gec_metrics.EditKey, list[str]]]) -> None:
         self._table = table
 
-    def edits(self, source: str, corrected: str) -> dict[gec_metrics.EditKey, list[str]]:
+    def edits(
+        self, source: str, corrected: str, ignore: frozenset[str] = frozenset()
+    ) -> dict[gec_metrics.EditKey, list[str]]:
         return self._table[(source, corrected)]
 
 

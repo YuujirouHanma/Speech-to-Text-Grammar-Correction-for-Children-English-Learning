@@ -49,7 +49,10 @@ async def submit_analysis(
 
     def work() -> dict[str, Any]:
         analysis = container.analysis.analyze(data, num_beams=num_beams)
-        return AnalyzeResponse.from_domain(analysis, request_id).model_dump(mode="json")
+        response = AnalyzeResponse.from_domain(
+            analysis, request_id, container.settings.feedback_language
+        )
+        return response.model_dump(mode="json")
 
     snapshot = container.jobs.submit(work, owner=principal.id)
     url = f"/v1/jobs/{snapshot.id}"

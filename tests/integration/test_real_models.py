@@ -103,6 +103,7 @@ def test_end_to_end_api_with_real_models() -> None:
     with TestClient(app) as client:
         assert client.get("/readyz").status_code == 200
         text = client.post("/v1/text/correct", json={"text": "She have completed her homework"})
+        # Typed text gets punctuation feedback (the missing period); speech does not.
         assert text.json()["correction"]["corrected"] == "She has completed her homework."
         with VOICE_SAMPLE.open("rb") as fh:
             audio = client.post(

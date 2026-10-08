@@ -8,7 +8,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from speakfix.domain.models import Analysis, AudioStats, Correction, Edit, Transcript
-from speakfix.text.edits import describe_error_type
+from speakfix.text.edits import FeedbackLanguage, describe_error_type
 
 
 class ErrorBody(BaseModel):
@@ -46,8 +46,8 @@ class EditOut(BaseModel):
     description: str | None = Field(default=None, examples=["Subject-verb agreement"])
 
     @classmethod
-    def from_domain(cls, edit: Edit) -> EditOut:
-        """Convert a domain edit."""
+    def from_domain(cls, edit: Edit, language: FeedbackLanguage = "en") -> EditOut:
+        """Convert a domain edit (``description`` in ``language``)."""
         return cls(
             op=edit.op,
             original=edit.original,
@@ -55,7 +55,7 @@ class EditOut(BaseModel):
             start=edit.start,
             end=edit.end,
             error_type=edit.error_type,
-            description=describe_error_type(edit.error_type),
+            description=describe_error_type(edit.error_type, language),
         )
 
 
@@ -71,13 +71,13 @@ class CorrectionOut(BaseModel):
     warnings: list[str] = []
 
     @classmethod
-    def from_domain(cls, c: Correction) -> CorrectionOut:
+    def from_domain(cls, c: Correction, language: FeedbackLanguage = "en") -> CorrectionOut:
         """Convert a domain correction."""
         return cls(
             original=c.original,
             corrected=c.corrected,
             changed=c.changed,
-            edits=[EditOut.from_domain(e) for e in c.edits],
+            edits=[EditOut.from_domain(e, language) for e in c.edits],
             sentences=c.sentences,
             backend=c.backend,
             warnings=list(c.warnings),
@@ -165,12 +165,14 @@ class AnalyzeResponse(BaseModel):
     timings_ms: dict[str, float]
 
     @classmethod
-    def from_domain(cls, a: Analysis, request_id: str) -> AnalyzeResponse:
+    def from_domain(
+        cls, a: Analysis, request_id: str, language: FeedbackLanguage = "en"
+    ) -> AnalyzeResponse:
         """Convert a domain analysis."""
         return cls(
             request_id=request_id,
             transcript=TranscriptOut.from_domain(a.transcript),
-            correction=CorrectionOut.from_domain(a.correction) if a.correction else None,
+            correction=CorrectionOut.from_domain(a.correction, language) if a.correction else None,
             audio=AudioStatsOut.from_domain(a.audio) if a.audio else None,
             warnings=list(a.warnings),
             timings_ms=dict(a.timings_ms),
@@ -228,3 +230,4 @@ class InfoResponse(BaseModel):
     stt: str | None
     limits: dict[str, Any]
     privacy: dict[str, Any]
+    ui: dict[str, Any]

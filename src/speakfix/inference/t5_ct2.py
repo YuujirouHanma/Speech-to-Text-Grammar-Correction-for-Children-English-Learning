@@ -19,6 +19,12 @@ def _is_oom(exc: BaseException) -> bool:
     return "out of memory" in str(exc).lower()
 
 
+def _inference_error(exc: RuntimeError) -> InferenceError:
+    if _is_oom(exc):
+        return ResourceExhaustedError("Out of memory during T5 inference.")
+    return InferenceError("T5 inference failed.")
+
+
 class Ct2Seq2SeqBackend:
     """Seq2seq generation with a converted CTranslate2 model directory."""
 
@@ -85,9 +91,7 @@ class Ct2Seq2SeqBackend:
                 return_scores=False,
             )
         except RuntimeError as exc:
-            if _is_oom(exc):
-                raise ResourceExhaustedError("Out of memory during T5 inference.") from exc
-            raise InferenceError("T5 inference failed.") from exc
+            raise _inference_error(exc) from exc
         outputs: list[str] = []
         for result in results:
             ids = [self._tokenizer.token_to_id(tok) for tok in result.hypotheses[0]]
@@ -95,3 +99,16 @@ class Ct2Seq2SeqBackend:
                 self._tokenizer.decode([i for i in ids if i is not None], skip_special_tokens=True)
             )
         return outputs
+
+    def score(self, sources: Sequence[str], targets: Sequence[str]) -> list[float]:
+        """Total log-probability of each target given its source (EOS included)."""
+        source_tokens = [self._tokenizer.encode(text).tokens for text in sources]
+        # CTranslate2 appends the end token to the target itself.
+        target_tokens = [
+            self._tokenizer.encode(text, add_special_tokens=False).tokens for text in targets
+        ]
+        try:
+            results = self._translator.score_batch(source_tokens, target_tokens)
+        except RuntimeError as exc:
+            raise _inference_error(exc) from exc
+        return [float(sum(result.log_probs)) for result in results]

@@ -81,4 +81,6 @@ async def analyze(
     analysis = await container.run_inference(
         lambda: container.analysis.analyze(data, num_beams=num_beams)
     )
-    return AnalyzeResponse.from_domain(analysis, request.state.request_id)
+    return AnalyzeResponse.from_domain(
+        analysis, request.state.request_id, container.settings.feedback_language
+    )

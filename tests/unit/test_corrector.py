@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import pytest
 
 from speakfix.config import InputStyle
@@ -151,3 +153,94 @@ def test_warmup_uses_fallback_when_primary_is_broken() -> None:
     primary = FakeBackend(fail_times=99, error=InferenceError, name="primary")
     corrector = GrammarCorrector(primary, fallback_factory=lambda: FakeBackend(name="fallback"))
     corrector.warmup()  # must not raise
+
+
+class ScoringBackend(FakeBackend):
+    """FakeBackend that can also score outputs (log-probabilities from a table)."""
+
+    def __init__(self, scores: dict[str, float], *, scoring_fails: bool = False) -> None:
+        super().__init__()
+        self.scores = scores
+        self.scoring_fails = scoring_fails
+        self.score_calls: list[list[str]] = []
+
+    def score(self, sources: Sequence[str], targets: Sequence[str]) -> list[float]:
+        self.score_calls.append(list(targets))
+        if self.scoring_fails:
+            raise InferenceError("simulated scoring failure")
+        return [self.scores[t] for t in targets]
+
+
+SCORES = {
+    "He doesn't like apples.": -0.1,  # margin 4.9 over the input: a confident correction
+    "He don't like apples.": -5.0,
+    "She goes to school every day.": -1.0,  # margin 0.5: the model barely prefers it
+    "She go to school every day.": -1.5,
+}
+TWO_SENTENCES = "He don't like apples. She go to school every day."
+
+
+def test_confidence_margin_drops_uncertain_corrections() -> None:
+    backend = ScoringBackend(SCORES)
+    result = GrammarCorrector(backend, config=CorrectionConfig(min_correction_margin=2.0)).correct(
+        TWO_SENTENCES
+    )
+    assert result.corrected == "He doesn't like apples. She go to school every day."
+    assert [(e.original, e.corrected) for e in result.edits] == [("don't", "doesn't")]
+    assert "uncertain_correction_skipped" in result.warnings
+
+
+def test_confidence_margin_scores_only_changed_sentences() -> None:
+    backend = ScoringBackend(SCORES)
+    config = CorrectionConfig(min_correction_margin=2.0)
+    GrammarCorrector(backend, config=config).correct("He don't like apples. All is fine here.")
+    assert backend.score_calls == [["He doesn't like apples.", "He don't like apples."]]
+
+    GrammarCorrector(backend).correct(TWO_SENTENCES)  # margin disabled by default
+    assert len(backend.score_calls) == 1
+
+
+def test_confidence_margin_keeps_corrections_when_scoring_fails() -> None:
+    backend = ScoringBackend(SCORES, scoring_fails=True)
+    config = CorrectionConfig(min_correction_margin=2.0)
+    result = GrammarCorrector(backend, config=config).correct(TWO_SENTENCES)
+    assert result.corrected == "He doesn't like apples. She goes to school every day."
+
+
+def test_confidence_margin_needs_a_scoring_backend() -> None:
+    config = CorrectionConfig(min_correction_margin=2.0)
+    result = GrammarCorrector(FakeBackend(), config=config).correct(TWO_SENTENCES)
+    assert result.corrected == "He doesn't like apples. She goes to school every day."
+
+
+def test_without_punctuation_feedback_no_period_is_added() -> None:
+    backend = FakeBackend()
+    result = GrammarCorrector(backend, config=CorrectionConfig(punctuation_feedback=False)).correct(
+        "I am student"
+    )
+    assert backend.calls[0][0] == ["grammar: I am student."]  # the model still sees a period
+    assert result.corrected == "I am a student"
+    assert [(e.original, e.corrected) for e in result.edits] == [("", "a")]
+
+
+@pytest.mark.parametrize(
+    ("text", "model_output"),
+    [
+        ("If it rains we stay home.", "If it rains, we stay home."),  # comma only
+        ("she is happy.", "She is happy."),  # case only
+    ],
+)
+def test_without_punctuation_feedback_surface_only_changes_are_ignored(
+    text: str, model_output: str
+) -> None:
+    backend = FakeBackend(transform=lambda _s: model_output)
+    quiet = GrammarCorrector(backend, config=CorrectionConfig(punctuation_feedback=False))
+    assert not quiet.correct(text).changed
+    assert GrammarCorrector(backend).correct(text).corrected == model_output
+
+
+def test_speech_transcripts_never_get_punctuation_feedback() -> None:
+    backend = FakeBackend(transform=lambda _s: "If it rains, we stay home.")
+    corrector = GrammarCorrector(backend)  # punctuation feedback on (typed text)
+    assert corrector.correct("If it rains we stay home.").changed
+    assert not corrector.correct("If it rains we stay home.", from_speech=True).changed

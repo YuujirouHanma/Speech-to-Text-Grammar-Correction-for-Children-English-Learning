@@ -37,6 +37,6 @@ async def correct_text(
     )
     return CorrectTextResponse(
         request_id=request.state.request_id,
-        correction=CorrectionOut.from_domain(correction),
+        correction=CorrectionOut.from_domain(correction, container.settings.feedback_language),
         timings_ms={"total_ms": round((time.perf_counter() - start) * 1000, 1)},
     )

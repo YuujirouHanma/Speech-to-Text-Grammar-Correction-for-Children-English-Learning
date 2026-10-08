@@ -141,7 +141,9 @@ class AnalysisService:
         else:
             start = time.perf_counter()
             try:
-                correction = corrector.correct(transcript.text, num_beams=num_beams)
+                correction = corrector.correct(
+                    transcript.text, num_beams=num_beams, from_speech=True
+                )
                 warnings.extend(correction.warnings)
             except InferenceError:
                 log.exception("correction_failed_returning_transcript_only")

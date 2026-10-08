@@ -31,3 +31,6 @@ recordings/
 
 # Model backups made by scripts/backup_models.py (store them off the laptop)
 backups/
+
+# Downloaded tools (cloudflared for the public demo)
+.tools/

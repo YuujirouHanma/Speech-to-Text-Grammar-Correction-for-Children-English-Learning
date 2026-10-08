@@ -94,6 +94,8 @@ def build_corrector(settings: Settings) -> GrammarCorrector:
         max_output_tokens=settings.max_output_tokens,
         max_batch_size=settings.max_batch_size,
         min_faithfulness=settings.min_faithfulness,
+        min_correction_margin=settings.min_correction_margin,
+        punctuation_feedback=settings.punctuation_feedback,
         max_chars=settings.max_text_chars,
     )
     fallback_kind = settings.corrector_fallback_backend

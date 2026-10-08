@@ -98,6 +98,16 @@ def ensure_terminal_punctuation(sentence: str) -> str:
     return sentence.rstrip(",;:") + "."
 
 
+def strip_terminal_punctuation(sentence: str) -> str:
+    """Remove trailing ``.``, ``!`` or ``?`` (undoes :func:`ensure_terminal_punctuation`)."""
+    return re.sub(r"[.!?]+$", "", sentence.rstrip()).rstrip()
+
+
+def same_words(a: str, b: str) -> bool:
+    """True when two texts differ only in punctuation, letter case or spacing."""
+    return _WORD.findall(a.lower()) == _WORD.findall(b.lower())
+
+
 def to_jfleg_style(sentence: str) -> str:
     """Tokenize like the JFLEG training data (``do n't``, ``word .``)."""
     s = sentence

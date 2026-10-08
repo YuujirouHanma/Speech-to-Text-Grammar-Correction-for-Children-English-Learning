@@ -82,6 +82,10 @@ class Settings(BaseSettings):
     cors_origins: Annotated[list[str], NoDecode] = Field(default_factory=list)
     enable_docs: bool = True
     enable_ui: bool = True
+    # Language of the error descriptions in the API and of the demo UI's hints.
+    feedback_language: Literal["en", "id"] = "id"
+    # Public demo: the UI asks for adult voices only (no children's recordings).
+    demo_mode: bool = False
     require_consent: bool = True
     rate_limit_per_minute: int = Field(default=60, ge=0)
     max_upload_mb: float = Field(default=10.0, gt=0)
@@ -107,6 +111,13 @@ class Settings(BaseSettings):
     max_output_tokens: int = Field(default=256, ge=16, le=1024)
     max_batch_size: int = Field(default=16, ge=1)
     min_faithfulness: float = Field(default=0.4, ge=0.0, le=1.0)
+    # A sentence correction is shown only if the model prefers it over the unchanged
+    # sentence by this log-probability margin (calibrated on the validation split with
+    # scripts/calibrate_correction.py). "-inf" turns the check off.
+    min_correction_margin: float = 2.5
+    # Punctuation/capitalization feedback on typed text. Speech never gets it: a
+    # transcript's punctuation comes from the STT engine, not from the child.
+    punctuation_feedback: bool = True
     enable_error_types: bool = True
 
     # ---------------------------------------------------------------------- stt

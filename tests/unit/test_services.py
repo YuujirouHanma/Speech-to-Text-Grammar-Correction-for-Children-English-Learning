@@ -183,6 +183,17 @@ class TestAnalysisService:
         assert analysis.correction.corrected == "He doesn't like apples."
         assert {"audio_ms", "stt_ms", "correct_ms", "total_ms"} <= set(analysis.timings_ms)
 
+    def test_transcript_punctuation_is_not_corrected(self) -> None:
+        service = AnalysisService(
+            corrector=lambda: GrammarCorrector(
+                FakeBackend(transform=lambda _s: "If it rains, we stay home.")
+            ),
+            transcriber=lambda: Transcriber(FakeSTT("If it rains we stay home.")),
+        )
+        analysis = service.analyze(make_wav(1.5))
+        assert analysis.correction is not None
+        assert not analysis.correction.changed  # the comma would be Whisper's, not the child's
+
     def test_correction_failure_degrades_gracefully(self) -> None:
         service = AnalysisService(
             corrector=lambda: GrammarCorrector(FakeBackend(fail_times=99, error=InferenceError)),
@@ -246,3 +257,14 @@ class TestWatchdog:
             assert not container.stuck
 
         asyncio.run(scenario())
+
+
+def test_edit_descriptions_follow_the_feedback_language() -> None:
+    from speakfix.api.schemas import CorrectionOut
+    from speakfix.domain.models import Correction, Edit
+
+    edit = Edit("replace", "is", "are", 5, 7, error_type="R:VERB:SVA")
+    correction = Correction("They is happy", "They are happy", (edit,), 1, "fake")
+    assert CorrectionOut.from_domain(correction).edits[0].description == "Subject-verb agreement"
+    indonesian = CorrectionOut.from_domain(correction, "id").edits[0].description
+    assert indonesian == "Kata kerja harus sesuai dengan subjek"

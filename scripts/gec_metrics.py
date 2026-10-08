@@ -116,11 +116,17 @@ class GecScorer:
             self._docs[text] = self._annotator.parse(" ".join(self.tokens(text)))
         return self._docs[text]
 
-    def edits(self, source: str, corrected: str) -> dict[EditKey, list[str]]:
-        """ERRANT edits keyed by ``(start, end, correction)``, mapped to their types."""
+    def edits(
+        self, source: str, corrected: str, ignore: frozenset[str] = frozenset()
+    ) -> dict[EditKey, list[str]]:
+        """ERRANT edits keyed by ``(start, end, correction)``, mapped to their types.
+
+        ``ignore`` drops categories such as ``{"PUNCT"}`` (the type without its
+        ``M:``/``R:``/``U:`` operation prefix).
+        """
         result: dict[EditKey, list[str]] = {}
         for e in self._annotator.annotate(self.doc(source), self.doc(corrected)):
-            if e.type != "UNK":
+            if e.type != "UNK" and e.type[2:] not in ignore:
                 result.setdefault((e.o_start, e.o_end, e.c_str), []).append(e.type)
         return result
 
@@ -130,14 +136,15 @@ class GecScorer:
         hypotheses: Sequence[str],
         references: Sequence[Sequence[str]],
         beta: float = 0.5,
+        ignore: frozenset[str] = frozenset(),
     ) -> dict[str, float]:
         """Corpus ERRANT precision, recall and F-beta (best reference per sentence)."""
         total_tp = total_fp = total_fn = 0
         for src, hyp, refs in zip(sources, hypotheses, references, strict=True):
-            hyp_edits = self.edits(src, hyp)
+            hyp_edits = self.edits(src, hyp, ignore)
             best_tp, best_fp, best_fn, best_f = 0, 0, 0, -1.0
             for ref in refs:
-                tp, fp, fn = compare_edits(hyp_edits, self.edits(src, ref))
+                tp, fp, fn = compare_edits(hyp_edits, self.edits(src, ref, ignore))
                 f = f_score(tp + total_tp, fp + total_fp, fn + total_fn, beta)[2]
                 if (f, tp, -fp, -fn) > (best_f, best_tp, -best_fp, -best_fn):
                     best_tp, best_fp, best_fn, best_f = tp, fp, fn, f
@@ -153,10 +160,19 @@ class GecScorer:
         hypotheses: Sequence[str],
         references: Sequence[Sequence[str]],
     ) -> dict[str, float]:
-        """GLEU and ERRANT scores of detokenised hypotheses against references."""
+        """GLEU and ERRANT scores of detokenised hypotheses against references.
+
+        ``errant_*_grammar`` ignores punctuation edits, matching the service's
+        default of giving no punctuation feedback on speech transcripts.
+        """
         gleu = corpus_gleu(
             [self.tokens(s) for s in sources],
             [self.tokens(h) for h in hypotheses],
             [[self.tokens(r) for r in refs] for refs in references],
         )
-        return {"gleu": round(gleu, 4), **self.errant(sources, hypotheses, references)}
+        grammar = self.errant(sources, hypotheses, references, ignore=frozenset({"PUNCT"}))
+        return {
+            "gleu": round(gleu, 4),
+            **self.errant(sources, hypotheses, references),
+            **{f"{name}_grammar": value for name, value in grammar.items()},
+        }

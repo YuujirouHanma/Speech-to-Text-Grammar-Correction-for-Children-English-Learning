@@ -51,6 +51,15 @@ class Seq2SeqBackend(Protocol):
 
 
 @runtime_checkable
+class Seq2SeqScorer(Protocol):
+    """Optional backend capability: how likely the model finds a given output."""
+
+    def score(self, sources: Sequence[str], targets: Sequence[str]) -> list[float]:
+        """Total log-probability (natural log, EOS included) of each target given its source."""
+        ...
+
+
+@runtime_checkable
 class EditClassifier(Protocol):
     """Labels edits with an error type (e.g. ERRANT ``R:VERB:SVA``)."""
 

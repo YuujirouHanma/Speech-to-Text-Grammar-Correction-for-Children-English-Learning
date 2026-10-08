@@ -20,3 +20,4 @@ docker-compose.yml
 **/*.wav
 **/*.mp3
 backups
+.tools

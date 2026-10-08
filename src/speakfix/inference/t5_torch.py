@@ -72,16 +72,45 @@ class TorchSeq2SeqBackend:
             decoded: list[str] = self._tokenizer.batch_decode(
                 output, skip_special_tokens=True, clean_up_tokenization_spaces=False
             )
-        except torch.cuda.OutOfMemoryError as exc:
-            torch.cuda.empty_cache()
-            raise ResourceExhaustedError("Out of GPU memory during T5 inference.") from exc
         except RuntimeError as exc:
-            if "out of memory" in str(exc).lower():
-                if device_is_cuda(self.device):
-                    torch.cuda.empty_cache()
-                raise ResourceExhaustedError("Out of memory during T5 inference.") from exc
-            raise InferenceError("T5 inference failed.") from exc
+            raise self._inference_error(exc) from exc
         return decoded
+
+    def score(self, sources: Sequence[str], targets: Sequence[str]) -> list[float]:
+        """Total log-probability of each target given its source (EOS included)."""
+        torch = self._torch
+        try:
+            with torch.inference_mode():
+                encoded = self._tokenizer(
+                    list(sources),
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                    max_length=512,
+                ).to(self.device)
+                labels = self._tokenizer(
+                    text_target=list(targets),
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                    max_length=512,
+                ).input_ids.to(self.device)
+                logits = self._model(**encoded, labels=labels).logits.float()
+                token_logp = logits.log_softmax(-1).gather(-1, labels.unsqueeze(-1)).squeeze(-1)
+                totals = (token_logp * labels.ne(self._tokenizer.pad_token_id)).sum(-1)
+        except RuntimeError as exc:
+            raise self._inference_error(exc) from exc
+        return [float(x) for x in totals.tolist()]
+
+    def _inference_error(self, exc: RuntimeError) -> InferenceError:
+        """Map a runtime failure to the domain error (freeing GPU memory after an OOM)."""
+        torch = self._torch
+        oom = isinstance(exc, torch.cuda.OutOfMemoryError) or "out of memory" in str(exc).lower()
+        if not oom:
+            return InferenceError("T5 inference failed.")
+        if device_is_cuda(self.device):
+            torch.cuda.empty_cache()
+        return ResourceExhaustedError("Out of memory during T5 inference.")
 
 
 def device_is_cuda(device: str) -> bool:

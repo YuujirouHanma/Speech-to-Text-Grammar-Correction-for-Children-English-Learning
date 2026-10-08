@@ -21,6 +21,7 @@ class TestOps:
         info = client.get("/v1/info").json()
         assert info["privacy"]["stores_audio"] is False
         assert info["privacy"]["consent_required"] is True
+        assert info["ui"] == {"demo_mode": False, "feedback_language": "id"}
 
     def test_not_ready_returns_503(self, app_factory: Factory) -> None:
         client = app_factory(fail_corrector=True)

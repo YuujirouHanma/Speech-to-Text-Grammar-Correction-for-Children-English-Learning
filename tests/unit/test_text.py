@@ -8,12 +8,25 @@ from speakfix.text.normalize import (
     has_terminal_punctuation,
     match_leading_case,
     normalize_text,
+    same_words,
     split_sentences,
+    strip_terminal_punctuation,
     to_jfleg_style,
 )
 
 
 class TestNormalize:
+    def test_strip_terminal_punctuation(self) -> None:
+        assert strip_terminal_punctuation("They are happy.") == "They are happy"
+        assert strip_terminal_punctuation("Really?! ") == "Really"
+        assert strip_terminal_punctuation("No period") == "No period"
+
+    def test_same_words_ignores_punctuation_and_case_only(self) -> None:
+        assert same_words("if it rains we stay home", "If it rains, we stay home.")
+        assert not same_words("She go to school.", "She goes to school.")
+        assert not same_words("I can not swim.", "I cannot swim.")
+        assert not same_words("I dont know.", "I don't know.")
+
     def test_quotes_whitespace_and_control_chars(self) -> None:
         assert normalize_text("  She don’t\tlike “apples”\x07  ") == 'She don\'t like "apples"'
 
@@ -102,3 +115,19 @@ class TestEdits:
     )
     def test_describe_error_type(self, code: str | None, expected: str | None) -> None:
         assert describe_error_type(code) == expected
+
+    @pytest.mark.parametrize(
+        ("code", "expected"),
+        [
+            ("R:VERB:SVA", "Kata kerja harus sesuai dengan subjek"),
+            ("M:DET", "Kurang kata sandang (a/an/the)"),
+            ("U:PREP", "Kata depan (in/on/at ...) tidak perlu"),
+            ("R:VERB:FORM", "Bentuk kata kerja kurang tepat"),
+            ("R:SPELL", "Ejaan"),
+            (None, None),
+        ],
+    )
+    def test_describe_error_type_in_indonesian(
+        self, code: str | None, expected: str | None
+    ) -> None:
+        assert describe_error_type(code, "id") == expected

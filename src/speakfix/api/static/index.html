@@ -1,39 +1,44 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SpeakFix — English speaking practice</title>
+  <title>SpeakFix — Latihan bicara bahasa Inggris</title>
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/app.js" defer></script>
 </head>
 <body>
   <header>
     <h1>SpeakFix</h1>
-    <p>Say or type an English sentence and get friendly grammar feedback.</p>
+    <p>Ucapkan atau ketik kalimat bahasa Inggris, lalu lihat saran perbaikan grammar-nya.</p>
   </header>
 
   <main>
+    <p id="demoBanner" class="banner" hidden>
+      <strong>Mode demo.</strong> Gunakan suara orang dewasa saja, jangan merekam suara anak.
+      Rekaman hanya diproses di memori dan tidak disimpan.
+    </p>
+
     <section class="card">
       <label class="consent">
         <input type="checkbox" id="consent">
-        <span>I am the parent/guardian, or a teacher with verified parental consent, and I agree
-          that this recording is processed. Audio is processed in memory and never stored.</span>
+        <span id="consentText">Saya orang tua/wali, atau guru yang sudah mendapat izin dari orang tua,
+          dan setuju rekaman ini diproses. Audio hanya diproses di memori dan tidak pernah disimpan.</span>
       </label>
       <details>
-        <summary>API key (only if this server requires one)</summary>
+        <summary>API key (hanya jika server memintanya)</summary>
         <input id="apiKey" type="password" autocomplete="off" placeholder="X-API-Key">
       </details>
     </section>
 
     <section class="card">
-      <h2>Speak</h2>
+      <h2>Bicara</h2>
       <div class="row">
-        <button id="recordBtn" class="primary" type="button">Start recording</button>
+        <button id="recordBtn" class="primary" type="button">Mulai rekam</button>
         <span id="timer" class="muted">0:00 / 0:60</span>
       </div>
       <div class="row">
-        <label class="file">Or upload a recording
+        <label class="file">Atau unggah rekaman
           <input id="fileInput" type="file" accept="audio/*">
         </label>
       </div>
@@ -41,20 +46,21 @@
     </section>
 
     <section class="card">
-      <h2>Type</h2>
+      <h2>Ketik</h2>
       <textarea id="textInput" rows="3" maxlength="2000" placeholder="She don't like apples."></textarea>
-      <button id="checkBtn" type="button">Check grammar</button>
+      <button id="checkBtn" type="button">Periksa grammar</button>
     </section>
 
     <section class="card" id="result" hidden>
-      <h2>Feedback</h2>
-      <p class="label">What we heard / what you wrote</p>
+      <h2>Hasil</h2>
+      <p class="label">Yang terdengar / yang ditulis</p>
       <p id="original" class="quote"></p>
-      <p class="label">Better English</p>
+      <p class="label" id="correctedLabel">Saran perbaikan</p>
       <p id="corrected" class="quote corrected"></p>
       <ul id="edits" class="edits"></ul>
-      <p id="praise" class="praise" hidden>Great job, no mistakes found!</p>
+      <p id="praise" class="praise" hidden>Bagus! Tidak ada kesalahan yang terdeteksi.</p>
       <p id="warnings" class="muted"></p>
+      <p class="muted">Saran dibuat otomatis dan bisa keliru. Anggap sebagai bantuan, bukan nilai.</p>
       <p id="timing" class="muted"></p>
     </section>
 
@@ -62,7 +68,7 @@
   </main>
 
   <footer>
-    <a href="/docs">API docs</a> · <a href="/readyz">status</a>
+    <a href="/docs">Dokumentasi API</a> · <a href="/readyz">Status server</a>
   </footer>
 </body>
 </html>

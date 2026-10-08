@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import time
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -75,11 +76,21 @@ def legacy_system(backend: Seq2SeqBackend) -> Callable[[Sequence[str]], list[str
 
 
 def speakfix_system(
-    backend: Seq2SeqBackend, style: InputStyle, beams: int = 5
+    backend: Seq2SeqBackend,
+    style: InputStyle,
+    beams: int = 5,
+    *,
+    min_margin: float = -math.inf,
+    punctuation_feedback: bool = True,
 ) -> Callable[[Sequence[str]], list[str]]:
-    corrector = GrammarCorrector(
-        backend, config=CorrectionConfig(input_style=style, max_chars=10_000, num_beams=beams)
+    config = CorrectionConfig(
+        input_style=style,
+        max_chars=10_000,
+        num_beams=beams,
+        min_correction_margin=min_margin,
+        punctuation_feedback=punctuation_feedback,
     )
+    corrector = GrammarCorrector(backend, config=config)
 
     def run(sources: Sequence[str]) -> list[str]:
         return [corrector.correct(s).corrected for s in sources]
@@ -149,6 +160,23 @@ def main() -> None:
     parser.add_argument("--limit", type=int)
     parser.add_argument("--num-beams", type=int, default=5, help="Beam width (1 = greedy)")
     parser.add_argument("--label", default="baseline")
+    parser.add_argument(
+        "--min-margin",
+        type=float,
+        default=-math.inf,
+        help="confidence margin of the speakfix system (the service default is in config.py)",
+    )
+    parser.add_argument(
+        "--no-punctuation-feedback",
+        dest="punctuation_feedback",
+        action="store_false",
+        help="like the service: ignore punctuation-only changes, add no period",
+    )
+    parser.add_argument(
+        "--correct-sentences",
+        action="store_true",
+        help="also feed each dataset's first references back in: how often are they changed?",
+    )
     parser.add_argument("--gec-metrics", action="store_true", help="add GLEU and ERRANT F0.5")
     parser.add_argument("--out", type=Path, default=Path("reports/gec_eval.json"))
     args = parser.parse_args()
@@ -164,13 +192,23 @@ def main() -> None:
         datasets["jfleg_test"] = load_jfleg(args.jfleg, args.limit)
     if args.kaggle:
         datasets["kaggle_gc"] = load_kaggle(args.kaggle, args.limit, args.kaggle_split)
+    if args.correct_sentences:
+        for name, (_, refs) in list(datasets.items()):
+            correct = list(dict.fromkeys(r[0] for r in refs))
+            datasets[f"{name}_correct"] = (correct, [[c] for c in correct])
 
     systems: dict[str, Callable[[Sequence[str]], list[str]]] = {}
     for name in args.systems:
         if name == "legacy":
             systems[name] = legacy_system(backend)
         elif name == "speakfix":
-            systems[name] = speakfix_system(backend, InputStyle.RAW, args.num_beams)
+            systems[name] = speakfix_system(
+                backend,
+                InputStyle.RAW,
+                args.num_beams,
+                min_margin=args.min_margin,
+                punctuation_feedback=args.punctuation_feedback,
+            )
         elif name == "speakfix-jfleg":
             systems[name] = speakfix_system(backend, InputStyle.JFLEG)
 
