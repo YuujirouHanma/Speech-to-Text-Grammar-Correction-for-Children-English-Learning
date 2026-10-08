@@ -104,7 +104,7 @@ speakfix/
 ├── scripts/          prepare_models, train_t5, evaluate_gec (+ gec_metrics), evaluate_stt, benchmark,
 │                     backup_models, freeze_constraints
 ├── constraints.txt   versi dependensi yang sudah teruji (dipakai Docker, CI, dan setup lokal)
-├── tests/            unit/ dan integration/ (138 test)
+├── tests/            unit/ dan integration/ (156 test)
 ├── docker/           Dockerfile (CPU), Dockerfile.gpu (CUDA 12.8)
 ├── monitoring/       prometheus.yml, alerts.yml, dashboard Grafana
 ├── reports/          hasil evaluasi & benchmark
@@ -189,19 +189,24 @@ Contoh respons `/v1/text/correct`:
     "changed": true,
     "edits": [
       {"op": "replace", "original": "do", "corrected": "does", "start": 3, "end": 5,
-       "error_type": "R:VERB:SVA", "description": "Subject-verb agreement"},
+       "error_type": "R:VERB:SVA", "description": "Kata kerja harus sesuai dengan subjek"},
       {"op": "replace", "original": "is", "corrected": "are", "start": 27, "end": 29,
-       "error_type": "R:VERB:SVA", "description": "Subject-verb agreement"},
+       "error_type": "R:VERB:SVA", "description": "Kata kerja harus sesuai dengan subjek"},
       {"op": "insert", "original": "", "corrected": ".", "start": 35, "end": 35,
-       "error_type": "M:PUNCT", "description": "Missing punctuation"}
+       "error_type": "M:PUNCT", "description": "Kurang tanda baca"}
     ],
     "sentences": 2,
     "backend": "ctranslate2:int8_float32@cuda",
     "warnings": []
   },
-  "timings_ms": {"total_ms": 105.3}
+  "timings_ms": {"total_ms": 152.4}
 }
 ```
+
+`description` memakai Bahasa Indonesia secara default (`SPEAKFIX_FEEDBACK_LANGUAGE=en` untuk Inggris).
+Contoh di atas adalah teks ketikan, jadi titik yang hilang ikut dikoreksi. Untuk rekaman suara, perubahan
+yang hanya menyangkut tanda baca atau huruf kapital tidak dilaporkan, karena tanda baca transkrip berasal
+dari Whisper, bukan dari anak.
 
 `error_type` (kode ERRANT) dan `description` hanya terisi jika fitur ERRANT terpasang:
 `pip install -e ".[errant]"` lalu `python -m spacy download en_core_web_sm`. Untuk Docker, build dengan
@@ -243,10 +248,14 @@ Semua pengaturan dibaca dari environment variable berprefix `SPEAKFIX_` atau dar
 | `SPEAKFIX_WHISPER_VERBATIM_PROMPT` | `true` | Menjaga kesalahan grammar tetap tertulis. |
 | `SPEAKFIX_AUDIO_DENOISE` | `false` | Spectral gating, hanya untuk ruangan bising. |
 | `SPEAKFIX_MAX_UPLOAD_MB` / `SPEAKFIX_MAX_AUDIO_SECONDS` | `10` / `60` | Batas input. |
-| `SPEAKFIX_INFERENCE_WORKERS` | `1` | Inferensi paralel (naikkan di GPU). |
+| `SPEAKFIX_INFERENCE_WORKERS` | `1` | Inferensi paralel. Di GPU, `2` membuat latensi 4× lebih rendah saat ramai (lihat Uji beban). |
 | `SPEAKFIX_MAX_PENDING_REQUESTS` | `16` | Lebih dari ini akan dijawab 503 (backpressure). |
 | `SPEAKFIX_JOB_TTL_SECONDS` | `600` | Masa hidup hasil job async. |
 | `SPEAKFIX_ALLOW_CLOUD_STT` | `false` | Mengizinkan Gemini/Deepgram (baca bagian Privasi). |
+| `SPEAKFIX_MIN_CORRECTION_MARGIN` | `2.5` | Saran hanya ditampilkan jika model cukup yakin (lihat *Mengurangi koreksi keliru*). `1.0` = lebih banyak saran tetapi lebih banyak koreksi keliru; `-inf` = filter mati. |
+| `SPEAKFIX_PUNCTUATION_FEEDBACK` | `true` | Umpan balik tanda baca dan huruf kapital untuk teks ketikan. Transkrip suara tidak pernah mendapatkannya. |
+| `SPEAKFIX_FEEDBACK_LANGUAGE` | `id` | Bahasa deskripsi kesalahan di API (`id` atau `en`). |
+| `SPEAKFIX_DEMO_MODE` | `false` | Demo publik: UI meminta suara orang dewasa saja. |
 
 ---
 
@@ -342,6 +351,57 @@ Model v2 yang sama di GPU (`--device cuda --compute-type ...`, label `v2-gpu-*` 
 Selisih ini kecil (1 kalimat Kaggle = 0,33%), tetapi bfloat16 selalu paling rendah. Pada uji 120 kalimat
 JFLEG, bfloat16 juga lebih lambat (p50 122 ms vs 98 ms). Karena itu default GPU sekarang `int8_float32`.
 
+#### Mengurangi koreksi keliru (filter keyakinan)
+
+Model v2 masih mengubah sebagian kalimat yang **sudah benar**, misalnya *"The group of volunteers works"*
+diubah menjadi *"work"*. Untuk anak, saran yang keliru lebih merugikan daripada kesalahan yang terlewat.
+Karena itu ada dua pengaman:
+
+1. **Filter keyakinan** (`SPEAKFIX_MIN_CORRECTION_MARGIN`, default `2.5`). Model memberi skor
+   log-probabilitas pada saran koreksinya dan pada kalimat asli. Saran hanya ditampilkan jika selisihnya
+   mencapai ambang. Skor dihitung dalam satu *forward pass* tambahan, hanya untuk kalimat yang berubah.
+   Saran yang ditahan diberi catatan `uncertain_correction_skipped`.
+2. **Tanpa umpan balik tanda baca untuk suara.** Tanda baca dan huruf kapital dalam transkrip berasal
+   dari Whisper, bukan dari anak. Perubahan yang hanya menyangkut keduanya diabaikan, begitu pula titik
+   yang ditambahkan sistem untuk model. Teks ketikan tetap mendapat umpan balik tanda baca.
+
+Ambang dikalibrasi di **data validasi**, bukan di data uji
+(`python scripts/calibrate_correction.py --jfleg-train ..\train.csv --jfleg-test ..\eval.csv --kaggle "..\..\FP\Grammar Correction.csv"`).
+Data validasinya adalah 238 kalimat salah dan 328 kalimat benar yang tidak pernah dipakai untuk training.
+Skrip memeriksa bahwa split yang direkonstruksi identik dengan `split.json`. Hasil lengkapnya ada di
+`reports/correction_calibration.json`. ERRANT di tabel ini tidak menghitung edit tanda baca.
+
+| Ambang | Presisi | Recall | F0.5 | Kalimat benar diubah | Kalimat salah tanpa saran |
+|---|---|---|---|---|---|
+| tanpa filter | 0,598 | 0,524 | 0,582 | 15,2% | 24,4% |
+| 1,0 | 0,656 | 0,487 | 0,613 | 6,7% | 33,6% |
+| 2,0 | 0,686 | 0,463 | 0,626 | 4,9% | 40,3% |
+| **2,5 (default)** | **0,715** | 0,447 | **0,638** | **3,0%** | 44,5% |
+| 4,0 | 0,744 | 0,381 | 0,625 | 1,8% | 55,5% |
+
+Hasil di **data uji** (CPU int8, model v2; label `v2-baseline`, `v2-margin2.5-text`, dan
+`v2-margin2.5-speech` di `reports/gec_eval.json`). Kalimat benar diukur dengan memasukkan referensi
+pertama setiap kalimat sebagai input (`--correct-sentences`):
+
+| Konfigurasi | Kalimat benar Kaggle diubah | Kalimat benar JFLEG diubah | ERRANT P / R / F0.5 Kaggle | ERRANT P / R / F0.5 JFLEG | Kalimat salah Kaggle tanpa saran |
+|---|---|---|---|---|---|
+| Tanpa filter (sebelumnya) | 6,3% | 32,3% | 0,741 / 0,557 / 0,695 | 0,713 / 0,487 / 0,652 | 23,7% |
+| **Ambang 2,5, teks ketikan (default)** | **1,0%** | **7,2%** | **0,778** / 0,408 / 0,659 | **0,732** / 0,424 / 0,639 | 46,3% |
+| Ambang 2,5, gaya transkrip suara | 1,0% | 7,0% | 0,782 / 0,358 / 0,632 | 0,720 / 0,404 / 0,622 | 51,0% |
+
+Cara membaca:
+
+- Koreksi keliru pada kalimat benar turun **6×** (Kaggle) dan **4,5×** (JFLEG), dan presisi naik.
+  Bayarannya, sekitar separuh kalimat salah di data uji dibiarkan tanpa saran.
+- F0.5 di data uji sedikit turun karena data ujinya hanya berisi kalimat salah, sehingga manfaat filter
+  pada kalimat benar tidak ikut terhitung. Pada campuran kalimat salah dan benar (data validasi), F0.5
+  naik dari 0,582 ke 0,638.
+- Ke-13 kalimat uji tim (mp3 di folder FP) tetap terkoreksi dengan ambang 2,5 (margin 5,2–29,9).
+  Begitu juga kalimat tipikal lain seperti *"My mother cook rice"* (7,6) dan *"I have went to Bali"*
+  (4,7). Yang tertahan misalnya *"I am agree with your opinion."* versi pendek (1,17).
+- Jika tim lebih memilih lebih banyak saran, pakai `SPEAKFIX_MIN_CORRECTION_MARGIN=1.0`. Jika ingin
+  perilaku lama tanpa filter, pakai `-inf`.
+
 ### Evaluasi speech-to-text
 
 ```powershell
@@ -399,9 +459,60 @@ GPU baru unggul untuk input panjang dan untuk Whisper. Dengan GPU, small.en sece
 base.en tetap jadi default karena lebih akurat di data evaluasi (lihat tabel STT). Detail lengkap ada
 di `reports/benchmark.md`.
 
+### Uji beban (berapa banyak pengguna bersamaan?)
+
+```powershell
+python -m speakfix                  # di terminal lain; SPEAKFIX_INFERENCE_WORKERS=2 untuk GPU
+python scripts/load_test.py --users 15 30 --seconds 45 --think 3 --audio ..\recorded.wav
+```
+
+Setiap pengguna virtual mengirim rekaman 5 detik, menunggu hasilnya, berhenti sejenak (*think time*),
+lalu mengulang. Masing-masing memakai IP berbeda lewat `X-Forwarded-For`, sehingga rate limit per
+pengunjung tetap berlaku seperti di produksi. Hasil di RTX 4070 Laptop, 8 Oktober 2026, saat laptop
+tidak menjalankan pekerjaan lain:
+
+| Skenario | Worker | Berhasil | Throughput | p50 | p95 |
+|---|---|---|---|---|---|
+| 30 pengguna, jeda ±15 s (tempo realistis anak) | 1 | 100% | 2,0/s | 0,25 s | 0,64 s |
+| 30 pengguna, jeda ±3 s (agresif) | 1 | 99,3% | 6,5/s | 1,69 s | 2,35 s |
+| 30 pengguna, jeda ±3 s (agresif) | **2** | **100%** | **8,6/s** | **0,40 s** | **0,84 s** |
+
+- **Satu laptop cukup untuk satu kelas** (±30 anak yang bergantian bicara dan membaca hasil).
+- Di GPU, gunakan `SPEAKFIX_INFERENCE_WORKERS=2`: latensi saat ramai turun 4×, karena kerja CPU
+  (decode audio, tokenisasi, ERRANT) satu request bisa berjalan bersamaan dengan kerja GPU request lain.
+  Dengan 2 worker, 300 request paralel menghasilkan jawaban yang identik dengan request berurutan,
+  termasuk tipe kesalahannya, jadi tidak ada masalah *thread-safety*.
+- Jika beban melebihi kapasitas, server menjawab 503 *"server sibuk"* dengan cepat dan tidak macet.
+
 ---
 
 ## Deployment
+
+### Demo publik dari laptop (paling cepat, gratis)
+
+```powershell
+cd speakfix
+powershell -ExecutionPolicy Bypass -File scripts\run_public_demo.ps1
+```
+
+Skrip ini:
+- menjalankan SpeakFix di `127.0.0.1` (tidak bisa diakses langsung dari Wi-Fi), dengan GPU, 2 worker, dan
+  **mode demo** (banner "gunakan suara orang dewasa", teks persetujuan untuk orang dewasa);
+- membuka *Cloudflare Quick Tunnel* dan menampilkan link `https://<acak>.trycloudflare.com` yang bisa
+  dibuka dari HP atau laptop mana pun. HTTPS membuat mikrofon browser bisa dipakai;
+- saat pertama dijalankan, mengunduh `cloudflared.exe` resmi ke `.tools/` dan memeriksa tanda tangan
+  digital Cloudflare-nya;
+- menghentikan server dan tunnel saat Anda menekan **Ctrl+C**.
+
+Sudah diuji 8 Oktober 2026 lewat link publik: UI, koreksi teks, dan analisis rekaman (0,56 s) berjalan.
+Tunnel meneruskan IP asli pengunjung (`X-Forwarded-For`), sehingga rate limit berlaku per pengunjung,
+dan log server tidak memuat isi kalimat maupun IP.
+
+Batasan: link berganti setiap kali skrip dijalankan, laptop harus tetap menyala, dan *quick tunnel* tidak
+punya jaminan uptime. `/docs` dan `/metrics` (statistik teknis tanpa data pribadi) ikut terbuka. Untuk
+layanan permanen, gunakan Docker di server (di bawah).
+
+### Docker (server permanen)
 
 ```bash
 cp .env.example .env               # isi SPEAKFIX_API_KEYS dan GRAFANA_ADMIN_PASSWORD
@@ -515,7 +626,7 @@ Log ditulis sebagai JSON per baris (structlog) dengan `request_id`. Nilai field 
 ## Kualitas kode & testing
 
 ```powershell
-pytest -m "not slow"          # 131 test cepat, tanpa model (dipakai CI)
+pytest -m "not slow"          # 149 test cepat, tanpa model (dipakai CI)
 pytest                        # + 7 test dengan model asli / ERRANT (dilewati jika belum terpasang)
 pytest --cov=speakfix         # coverage 89%
 ruff check src tests scripts ; ruff format --check src tests scripts
@@ -586,6 +697,14 @@ Setelah meng-upgrade dependensi dan semua test lulus, perbarui lock dengan
   besar.
 - **`/readyz` 503 dengan `FileNotFoundError`**: model belum disiapkan. Jalankan
   `scripts/prepare_models.py`, atau set `SPEAKFIX_T5_MODEL_NAME=t5-gec`.
+- **Tombol rekam memberi pesan "mikrofon hanya lewat https://"**: browser memblokir mikrofon di alamat
+  `http://` selain localhost, misalnya `http://192.168.x.x:8000`. Buka lewat link HTTPS (demo publik)
+  atau `http://localhost:8000`, atau unggah file rekaman.
+- **`run_public_demo.ps1 cannot be loaded because running scripts is disabled`**: jalankan lewat
+  `powershell -ExecutionPolicy Bypass -File scripts\run_public_demo.ps1` (hanya untuk perintah itu).
+- **Kalimat yang jelas salah tidak dikoreksi, dengan catatan "sistem belum cukup yakin"**: filter
+  keyakinan menahan saran yang ragu-ragu (lihat *Mengurangi koreksi keliru*). Turunkan
+  `SPEAKFIX_MIN_CORRECTION_MARGIN` (misalnya ke `1.0`) jika tim lebih memilih lebih banyak saran.
 
 ## Uji nyata (server sungguhan, laptop)
 
@@ -608,10 +727,17 @@ dari transkrip.
 
 - Evaluasi STT masih memakai 15 rekaman (didominasi suara dewasa/TTS). Data suara anak diperlukan untuk
   evaluasi dan untuk fine-tuning Whisper (misalnya korpus MyST).
+- **Trade-off filter keyakinan.** Dengan ambang 2,5, kalimat benar yang ikut diubah turun drastis, tetapi
+  sekitar separuh kalimat salah di data uji dibiarkan tanpa saran. Kesalahan khas pembelajar Indonesia
+  pada kalimat uji tim tetap terkoreksi, tetapi kalimat sangat pendek seperti *"I am agree with your
+  opinion."* tertahan (margin 1,17). Ambang ini perlu dikalibrasi ulang dengan kalimat anak sungguhan.
+- Model belum mengenali sebagian pola, misalnya *"She is very like cats"* dibiarkan apa adanya.
 - Tipe kesalahan (ERRANT) sudah diuji di laptop pengembang (errant 3.0.2, spaCy 3.8). Pengujian ini
   menemukan bug: teks dulu dipecah per spasi saja, sehingga *don't → doesn't* diberi label `R:OTHER` dan
   tanda baca yang menempel pada kata ikut salah label. Sekarang spaCy yang melakukan tokenisasi, dan ada
   test untuk kasus ini. Docker GPU/CPU dengan `EXTRAS=errant` belum di-build (Docker tidak terpasang).
+- Hanya bahasa Inggris (`base.en`). Kata bahasa Indonesia yang terselip di kalimat anak akan ditranskripsi
+  kacau.
 - Skenario 3 ("data Grammar Correction Kaggle tanpa diolah"): file `Grammar Correction.csv.xls` yang
   diunduh 6 Oktober 2026 identik byte demi byte (MD5 `136568b4…`) dengan `FP/Grammar Correction.csv`.
   File itu sudah dipakai melatih v2 lewat `--kaggle`, jadi tidak perlu dilatih ulang. Untuk data baru,

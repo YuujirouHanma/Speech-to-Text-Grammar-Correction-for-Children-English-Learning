@@ -1984,5 +1984,1758 @@
         }
       ]
     }
+  },
+  "v2-baseline": {
+    "model": "models\\t5-gec-v2-ct2",
+    "backend": "ctranslate2:int8_float32@cpu",
+    "results": {
+      "jfleg_test": {
+        "speakfix": {
+          "bleu_1ref": 0.7269,
+          "bleu_4ref": 0.875,
+          "exact_any": 0.3641,
+          "unchanged": 0.2584,
+          "truncated": 0.0,
+          "gleu": 0.5705,
+          "errant_p": 0.7128,
+          "errant_r": 0.4873,
+          "errant_f05": 0.6524,
+          "errant_p_grammar": 0.7126,
+          "errant_r_grammar": 0.4857,
+          "errant_f05_grammar": 0.6517,
+          "seconds": 111.2
+        }
+      },
+      "kaggle_gc": {
+        "speakfix": {
+          "bleu_1ref": 0.8149,
+          "bleu_4ref": 0.8149,
+          "exact_any": 0.5367,
+          "unchanged": 0.2367,
+          "truncated": 0.0,
+          "gleu": 0.7257,
+          "errant_p": 0.7413,
+          "errant_r": 0.5569,
+          "errant_f05": 0.6953,
+          "errant_p_grammar": 0.7609,
+          "errant_r_grammar": 0.5608,
+          "errant_f05_grammar": 0.7102,
+          "seconds": 24.8
+        }
+      },
+      "jfleg_test_correct": {
+        "speakfix": {
+          "bleu_1ref": 0.9376,
+          "bleu_4ref": 0.9376,
+          "exact_any": 0.6774,
+          "unchanged": 0.6774,
+          "truncated": 0.0,
+          "gleu": 0.9401,
+          "errant_p": 0.0,
+          "errant_r": 1.0,
+          "errant_f05": 0.0,
+          "errant_p_grammar": 0.0,
+          "errant_r_grammar": 1.0,
+          "errant_f05_grammar": 0.0,
+          "seconds": 146.0
+        }
+      },
+      "kaggle_gc_correct": {
+        "speakfix": {
+          "bleu_1ref": 0.9798,
+          "bleu_4ref": 0.9798,
+          "exact_any": 0.9367,
+          "unchanged": 0.9367,
+          "truncated": 0.0,
+          "gleu": 0.9801,
+          "errant_p": 0.0,
+          "errant_r": 1.0,
+          "errant_f05": 0.0,
+          "errant_p_grammar": 0.0,
+          "errant_r_grammar": 1.0,
+          "errant_f05_grammar": 0.0,
+          "seconds": 22.7
+        }
+      }
+    },
+    "examples": {
+      "jfleg_test/speakfix": [
+        {
+          "source": "New and new technology has been introduced to the society.",
+          "output": "New and new technology has been introduced to the society.",
+          "reference": "New technology has been introduced to society."
+        },
+        {
+          "source": "One possible outcome is that an environmentally-induced reduction in motorization levels in the richer countries will outweigh any rise in motorization levels in the poorer countries.",
+          "output": "One possible outcome is that an environmentally-induced reduction in motorization levels in the richer countries will outweigh any rise in motorization levels in the poorer countries.",
+          "reference": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries."
+        },
+        {
+          "source": "Every person needs to know a bit about math, sciences, arts, literature and history in order to stand out in society.",
+          "output": "Every person needs to know a bit about math, sciences, arts, literature and history in order to stand out in society.",
+          "reference": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society."
+        },
+        {
+          "source": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely, that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "output": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "reference": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive."
+        },
+        {
+          "source": "Disadvantage is parking their car is very difficult.",
+          "output": "Disadvantage is parking their car is very difficult.",
+          "reference": "A disadvantage is that parking their cars is very difficult."
+        },
+        {
+          "source": "Bigger farming are use more chemical product and substance to feed fish.",
+          "output": "Bigger farming uses more chemicals and substances to feed fish.",
+          "reference": "Bigger farming is using more chemical products and substances to feed fish."
+        },
+        {
+          "source": "Forexample, My cousin is 12years old.",
+          "output": "For example, my cousin is 12 years old.",
+          "reference": "For example, my cousin is 12 years old."
+        },
+        {
+          "source": "if it does, you will only get some misundrestood idea about that acticle but not the original one.",
+          "output": "If it does, you will only get some misunderstood idea about that acticle but not the original one.",
+          "reference": "If it does, you will only get some misunderstood idea about that article but not the original one."
+        },
+        {
+          "source": "Secondly, chimp can also present the capability for grammer which means it can demonstrate the ability to combine words and be able to use grammatical constructions.",
+          "output": "Secondly, chimp can also present the capability for grammer, which means it can demonstrate the ability to combine words and be able to use grammatical constructions.",
+          "reference": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions."
+        },
+        {
+          "source": "Nevertheless, this city is having a big change.",
+          "output": "Nevertheless, this city is experiencing a big change.",
+          "reference": "Nevertheless, this city is going through a big change."
+        },
+        {
+          "source": "I think to learn facts is only an evidence if the students can work hard and if they are able to keep every detailled information as tought, but it's definitly not an evidence for their intelligence.",
+          "output": "I think to learn facts is only an evidence if the students can work hard and if they are able to keep every detailled information as tough, but it's definitely not an evidence for their intelligence.",
+          "reference": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence."
+        },
+        {
+          "source": "Unforturntly, almost older people can not use internet, in spite of benefit of internet.",
+          "output": "Unforturntly, almost older people can not use internet, in spite of benefit of internet.",
+          "reference": "Unfortunately, in spite of its benefits, many older people can not use the Internet."
+        },
+        {
+          "source": "So, if i have alot of information about this subject, i will taulk too much with knowledge but if i have general information for this subject, i will talk about this subjec with my limited knowlege and this case may be make me shame like when my brother asked me about some thing but i have not alot of information about this thing.",
+          "output": "So, if I have a lot of information about this subject, I will taulk too much with knowledge, but if I have general information for this subject, I will talk about this subject with my limited knowledge, and this case may make me shame, like when my brother asked me about something but I have not a lot of information about this thing.",
+          "reference": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing."
+        },
+        {
+          "source": "becuse if i see some one did somthing to may safe me time and engy and it wok's i will do it.",
+          "output": "Because if I see someone doing something to save me time and energy, I will do it.",
+          "reference": "Because if I see someone did something that may save me time and energy and it works, I will do it."
+        },
+        {
+          "source": "The government should think about the whole nature.",
+          "output": "The government should think about the whole nature.",
+          "reference": "The government should think about all nature."
+        },
+        {
+          "source": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "output": "They will not be able to compete with other similar brands and the product will fail or die.",
+          "reference": "They will not be able to compete with other similar brands and the product will fizzle out or die."
+        },
+        {
+          "source": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "output": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "reference": "People are now opening their eyes to the scenario when we would run out of fuel."
+        },
+        {
+          "source": "For me it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "output": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "reference": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time."
+        },
+        {
+          "source": "They only care if the effects are good and popular among the crowds.",
+          "output": "They only care if the effects are good and popular among the crowds.",
+          "reference": "They only care if the effects are good and popular among the crowds."
+        },
+        {
+          "source": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "output": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "reference": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options."
+        },
+        {
+          "source": "He said in other words that the more flouride may create damage in human body, specifically the bone.",
+          "output": "He said in other words that the more flouride may create damage in human body, specifically the bone.",
+          "reference": "He said in other words that the more fluoride may create damage in the human body, specifically the bone."
+        },
+        {
+          "source": "When these people create their new ideas others often look very strange on them.",
+          "output": "When these people create their new ideas, others often look very strange on them.",
+          "reference": "When these people create their new ideas, others often look very strange to them."
+        },
+        {
+          "source": "You will learn to socialize with people.",
+          "output": "You will learn to socialize with people.",
+          "reference": "You will learn to socialize with people."
+        },
+        {
+          "source": "No ohter transportation concept has been as successful as the car, not only because the goog street and highway system throughout the United States and Europe, but only because off the fact, that people love their cars.",
+          "output": "No other transportation concept has been as successful as the car, not only because the street and highway system throughout the United States and Europe, but only because people love their cars.",
+          "reference": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars."
+        },
+        {
+          "source": "If they prefer to choose cars than motor bike, that means there will be many cars.",
+          "output": "If they prefer to choose cars than motor bikes, that means there will be many cars.",
+          "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
+        }
+      ],
+      "kaggle_gc/speakfix": [
+        {
+          "source": "He don't know the answer.",
+          "output": "He doesn't know the answer.",
+          "reference": "He doesn't know the answer."
+        },
+        {
+          "source": "The flowers is blooming in spring.",
+          "output": "The flowers are blooming in spring.",
+          "reference": "The flowers bloom in spring."
+        },
+        {
+          "source": "The train leave at 6 PM.",
+          "output": "The train leaves at 6 PM.",
+          "reference": "The train leaves at 6 PM."
+        },
+        {
+          "source": "The manager gives a speech at the meeting.",
+          "output": "The manager gives a speech at the meeting.",
+          "reference": "The manager gave a speech at the meeting."
+        },
+        {
+          "source": "The company launch a new product next month.",
+          "output": "The company will launch a new product next month.",
+          "reference": "The company will launch a new product next month."
+        },
+        {
+          "source": "The photographer take a picture of the sunset.",
+          "output": "The photographer took a picture of the sunset.",
+          "reference": "The photographer took a picture of the sunset."
+        },
+        {
+          "source": "She has been make dinner for the family.",
+          "output": "She has been making dinner for the family.",
+          "reference": "She has been making dinner for the family."
+        },
+        {
+          "source": "The delivery driver brings the package yesterday.",
+          "output": "The delivery driver brought the package yesterday.",
+          "reference": "The delivery driver brought the package yesterday."
+        },
+        {
+          "source": "The phone is charge on the table.",
+          "output": "The phone is charged on the table.",
+          "reference": "The phone is charging on the table."
+        },
+        {
+          "source": "The dog was dig a hole in the yard.",
+          "output": "The dog was digging a hole in the yard.",
+          "reference": "The dog was digging a hole in the yard."
+        },
+        {
+          "source": "The employees at the store works diligently.",
+          "output": "The employees at the store work diligently.",
+          "reference": "The employees at the store work diligently."
+        },
+        {
+          "source": "The flock of birds fly south for the winter.",
+          "output": "The flock of birds fly south for the winter.",
+          "reference": "The flock of birds flies south for the winter."
+        },
+        {
+          "source": "The stack of papers on the desk need to be sorted.",
+          "output": "The stack of papers on the desk need to be sorted.",
+          "reference": "The stack of papers on the desk needs to be sorted."
+        },
+        {
+          "source": "The team of doctors have developed a new treatment.",
+          "output": "The team of doctors has developed a new treatment.",
+          "reference": "The team of doctors has developed a new treatment."
+        },
+        {
+          "source": "The group of volunteers work tirelessly to help the community.",
+          "output": "The group of volunteers work tirelessly to help the community.",
+          "reference": "The group of volunteers works tirelessly to help the community."
+        },
+        {
+          "source": "The couple plans their wedding together.",
+          "output": "The couple plans their wedding together.",
+          "reference": "The couple plan their wedding together."
+        },
+        {
+          "source": "The series of tests was challenging for the students.",
+          "output": "The series of tests were challenging for the students.",
+          "reference": "The series of tests were challenging for the students."
+        },
+        {
+          "source": "The group of friends meets every week for dinner.",
+          "output": "The group of friends meets every week for dinner.",
+          "reference": "The group of friends meet every week for dinner."
+        },
+        {
+          "source": "The class of students was eager to learn.",
+          "output": "The class of students were eager to learn.",
+          "reference": "The class of students were eager to learn."
+        },
+        {
+          "source": "The group of dancers perform in perfect unison.",
+          "output": "The group of dancers perform in perfect unity.",
+          "reference": "The group of dancers performs in perfect unison."
+        },
+        {
+          "source": "The crowd of spectators cheers for their favorite team.",
+          "output": "The crowd of spectators cheer for their favorite team.",
+          "reference": "The crowd of spectators cheer for their favorite team."
+        },
+        {
+          "source": "The group of birds nests in the trees.",
+          "output": "The group of birds nests in the trees.",
+          "reference": "The group of birds nest in the trees."
+        },
+        {
+          "source": "The assortment of toys in the store is impressive.",
+          "output": "The assortment of toys in the store are impressive.",
+          "reference": "The assortment of toys in the store are impressive."
+        },
+        {
+          "source": "The pair of gloves keeps my hands warm.",
+          "output": "The pair of gloves keeps my hands warm.",
+          "reference": "The pair of gloves keep my hands warm."
+        },
+        {
+          "source": "An apple a day keeps doctor away.",
+          "output": "An apple a day keeps the doctor away.",
+          "reference": "An apple a day keeps the doctor away."
+        }
+      ],
+      "jfleg_test_correct/speakfix": [
+        {
+          "source": "New technology has been introduced to society.",
+          "output": "New technology has been introduced to society.",
+          "reference": "New technology has been introduced to society."
+        },
+        {
+          "source": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries.",
+          "output": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries.",
+          "reference": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries."
+        },
+        {
+          "source": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society.",
+          "output": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society.",
+          "reference": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society."
+        },
+        {
+          "source": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "output": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "reference": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive."
+        },
+        {
+          "source": "A disadvantage is that parking their cars is very difficult.",
+          "output": "A disadvantage is that parking their cars is very difficult.",
+          "reference": "A disadvantage is that parking their cars is very difficult."
+        },
+        {
+          "source": "Bigger farming is using more chemical products and substances to feed fish.",
+          "output": "Bigger farming is using more chemical products and substances to feed fish.",
+          "reference": "Bigger farming is using more chemical products and substances to feed fish."
+        },
+        {
+          "source": "For example, my cousin is 12 years old.",
+          "output": "For example, my cousin is 12 years old.",
+          "reference": "For example, my cousin is 12 years old."
+        },
+        {
+          "source": "If it does, you will only get some misunderstood idea about that article but not the original one.",
+          "output": "If it does, you will only get some misunderstood idea about that article, but not the original one.",
+          "reference": "If it does, you will only get some misunderstood idea about that article but not the original one."
+        },
+        {
+          "source": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions.",
+          "output": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions.",
+          "reference": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions."
+        },
+        {
+          "source": "Nevertheless, this city is going through a big change.",
+          "output": "Nevertheless, this city is going through a big change.",
+          "reference": "Nevertheless, this city is going through a big change."
+        },
+        {
+          "source": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence.",
+          "output": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detail of information taught, but it's definitely not evidence of their intelligence.",
+          "reference": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence."
+        },
+        {
+          "source": "Unfortunately, in spite of its benefits, many older people can not use the Internet.",
+          "output": "Unfortunately, in spite of its benefits, many older people cannot use the Internet.",
+          "reference": "Unfortunately, in spite of its benefits, many older people can not use the Internet."
+        },
+        {
+          "source": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing.",
+          "output": "So, if I have a lot of information about this subject, I will talk a lot with knowledge, but if I have general information for this subject, I will talk about this subject with my limited knowledge, and this case may make me shameful, like when my brother asked me about something but I did not have a lot of information about this thing.",
+          "reference": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing."
+        },
+        {
+          "source": "Because if I see someone did something that may save me time and energy and it works, I will do it.",
+          "output": "Because if I see someone doing something that may save me time and energy and it works, I will do it.",
+          "reference": "Because if I see someone did something that may save me time and energy and it works, I will do it."
+        },
+        {
+          "source": "The government should think about all nature.",
+          "output": "The government should think about nature.",
+          "reference": "The government should think about all nature."
+        },
+        {
+          "source": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "output": "They will not be able to compete with other similar brands and the product will fail or die.",
+          "reference": "They will not be able to compete with other similar brands and the product will fizzle out or die."
+        },
+        {
+          "source": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "output": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "reference": "People are now opening their eyes to the scenario when we would run out of fuel."
+        },
+        {
+          "source": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "output": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "reference": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time."
+        },
+        {
+          "source": "They only care if the effects are good and popular among the crowds.",
+          "output": "They only care if the effects are good and popular among the crowds.",
+          "reference": "They only care if the effects are good and popular among the crowds."
+        },
+        {
+          "source": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "output": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "reference": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options."
+        },
+        {
+          "source": "He said in other words that the more fluoride may create damage in the human body, specifically the bone.",
+          "output": "He said in other words that the more fluoride may create damage in the human body, specifically the bone.",
+          "reference": "He said in other words that the more fluoride may create damage in the human body, specifically the bone."
+        },
+        {
+          "source": "When these people create their new ideas, others often look very strange to them.",
+          "output": "When these people create their new ideas, others often look very strange to them.",
+          "reference": "When these people create their new ideas, others often look very strange to them."
+        },
+        {
+          "source": "You will learn to socialize with people.",
+          "output": "You will learn to socialize with people.",
+          "reference": "You will learn to socialize with people."
+        },
+        {
+          "source": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars.",
+          "output": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars.",
+          "reference": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars."
+        },
+        {
+          "source": "If they prefer to choose cars than motor bikes, that means there will be many cars.",
+          "output": "If they prefer to choose cars than motor bikes, that means there will be many cars.",
+          "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
+        }
+      ],
+      "kaggle_gc_correct/speakfix": [
+        {
+          "source": "He doesn't know the answer.",
+          "output": "He doesn't know the answer.",
+          "reference": "He doesn't know the answer."
+        },
+        {
+          "source": "The flowers bloom in spring.",
+          "output": "The flowers bloom in spring.",
+          "reference": "The flowers bloom in spring."
+        },
+        {
+          "source": "The train leaves at 6 PM.",
+          "output": "The train leaves at 6 PM.",
+          "reference": "The train leaves at 6 PM."
+        },
+        {
+          "source": "The manager gave a speech at the meeting.",
+          "output": "The manager gave a speech at the meeting.",
+          "reference": "The manager gave a speech at the meeting."
+        },
+        {
+          "source": "The company will launch a new product next month.",
+          "output": "The company will launch a new product next month.",
+          "reference": "The company will launch a new product next month."
+        },
+        {
+          "source": "The photographer took a picture of the sunset.",
+          "output": "The photographer took a picture of the sunset.",
+          "reference": "The photographer took a picture of the sunset."
+        },
+        {
+          "source": "She has been making dinner for the family.",
+          "output": "She has been making dinner for the family.",
+          "reference": "She has been making dinner for the family."
+        },
+        {
+          "source": "The delivery driver brought the package yesterday.",
+          "output": "The delivery driver brought the package yesterday.",
+          "reference": "The delivery driver brought the package yesterday."
+        },
+        {
+          "source": "The phone is charging on the table.",
+          "output": "The phone is charging on the table.",
+          "reference": "The phone is charging on the table."
+        },
+        {
+          "source": "The dog was digging a hole in the yard.",
+          "output": "The dog was digging a hole in the yard.",
+          "reference": "The dog was digging a hole in the yard."
+        },
+        {
+          "source": "The employees at the store work diligently.",
+          "output": "The employees at the store work diligently.",
+          "reference": "The employees at the store work diligently."
+        },
+        {
+          "source": "The flock of birds flies south for the winter.",
+          "output": "The flock of birds flies south for the winter.",
+          "reference": "The flock of birds flies south for the winter."
+        },
+        {
+          "source": "The stack of papers on the desk needs to be sorted.",
+          "output": "The stack of papers on the desk needs to be sorted.",
+          "reference": "The stack of papers on the desk needs to be sorted."
+        },
+        {
+          "source": "The team of doctors has developed a new treatment.",
+          "output": "The team of doctors has developed a new treatment.",
+          "reference": "The team of doctors has developed a new treatment."
+        },
+        {
+          "source": "The group of volunteers works tirelessly to help the community.",
+          "output": "The group of volunteers work tirelessly to help the community.",
+          "reference": "The group of volunteers works tirelessly to help the community."
+        },
+        {
+          "source": "The couple plan their wedding together.",
+          "output": "The couple plan their wedding together.",
+          "reference": "The couple plan their wedding together."
+        },
+        {
+          "source": "The series of tests were challenging for the students.",
+          "output": "The series of tests were challenging for the students.",
+          "reference": "The series of tests were challenging for the students."
+        },
+        {
+          "source": "The group of friends meet every week for dinner.",
+          "output": "The group of friends meet every week for dinner.",
+          "reference": "The group of friends meet every week for dinner."
+        },
+        {
+          "source": "The class of students were eager to learn.",
+          "output": "The class of students were eager to learn.",
+          "reference": "The class of students were eager to learn."
+        },
+        {
+          "source": "The group of dancers performs in perfect unison.",
+          "output": "The group of dancers perform in perfect harmony.",
+          "reference": "The group of dancers performs in perfect unison."
+        },
+        {
+          "source": "The crowd of spectators cheer for their favorite team.",
+          "output": "The crowd of spectators cheer for their favorite team.",
+          "reference": "The crowd of spectators cheer for their favorite team."
+        },
+        {
+          "source": "The group of birds nest in the trees.",
+          "output": "The group of birds nest in the trees.",
+          "reference": "The group of birds nest in the trees."
+        },
+        {
+          "source": "The assortment of toys in the store are impressive.",
+          "output": "The assortment of toys in the store are impressive.",
+          "reference": "The assortment of toys in the store are impressive."
+        },
+        {
+          "source": "The pair of gloves keep my hands warm.",
+          "output": "The pair of gloves keep my hands warm.",
+          "reference": "The pair of gloves keep my hands warm."
+        },
+        {
+          "source": "An apple a day keeps the doctor away.",
+          "output": "An apple a day keeps the doctor away.",
+          "reference": "An apple a day keeps the doctor away."
+        }
+      ]
+    }
+  },
+  "v2-margin2.5-speech": {
+    "model": "models\\t5-gec-v2-ct2",
+    "backend": "ctranslate2:int8_float32@cpu",
+    "results": {
+      "jfleg_test": {
+        "speakfix": {
+          "bleu_1ref": 0.7208,
+          "bleu_4ref": 0.8684,
+          "exact_any": 0.34,
+          "unchanged": 0.5234,
+          "truncated": 0.0,
+          "gleu": 0.5398,
+          "errant_p": 0.7199,
+          "errant_r": 0.4035,
+          "errant_f05": 0.6223,
+          "errant_p_grammar": 0.7292,
+          "errant_r_grammar": 0.4124,
+          "errant_f05_grammar": 0.6321,
+          "seconds": 215.1
+        }
+      },
+      "kaggle_gc": {
+        "speakfix": {
+          "bleu_1ref": 0.7418,
+          "bleu_4ref": 0.7418,
+          "exact_any": 0.39,
+          "unchanged": 0.51,
+          "truncated": 0.0,
+          "gleu": 0.5867,
+          "errant_p": 0.7824,
+          "errant_r": 0.3578,
+          "errant_f05": 0.6323,
+          "errant_p_grammar": 0.7849,
+          "errant_r_grammar": 0.3623,
+          "errant_f05_grammar": 0.6364,
+          "seconds": 28.0
+        }
+      },
+      "jfleg_test_correct": {
+        "speakfix": {
+          "bleu_1ref": 0.9823,
+          "bleu_4ref": 0.9823,
+          "exact_any": 0.9304,
+          "unchanged": 0.9304,
+          "truncated": 0.0,
+          "gleu": 0.9827,
+          "errant_p": 0.0,
+          "errant_r": 1.0,
+          "errant_f05": 0.0,
+          "errant_p_grammar": 0.0,
+          "errant_r_grammar": 1.0,
+          "errant_f05_grammar": 0.0,
+          "seconds": 144.9
+        }
+      },
+      "kaggle_gc_correct": {
+        "speakfix": {
+          "bleu_1ref": 0.9962,
+          "bleu_4ref": 0.9962,
+          "exact_any": 0.99,
+          "unchanged": 0.99,
+          "truncated": 0.0,
+          "gleu": 0.9963,
+          "errant_p": 0.0,
+          "errant_r": 1.0,
+          "errant_f05": 0.0,
+          "errant_p_grammar": 0.0,
+          "errant_r_grammar": 1.0,
+          "errant_f05_grammar": 0.0,
+          "seconds": 23.2
+        }
+      }
+    },
+    "examples": {
+      "jfleg_test/speakfix": [
+        {
+          "source": "New and new technology has been introduced to the society.",
+          "output": "New and new technology has been introduced to the society.",
+          "reference": "New technology has been introduced to society."
+        },
+        {
+          "source": "One possible outcome is that an environmentally-induced reduction in motorization levels in the richer countries will outweigh any rise in motorization levels in the poorer countries.",
+          "output": "One possible outcome is that an environmentally-induced reduction in motorization levels in the richer countries will outweigh any rise in motorization levels in the poorer countries.",
+          "reference": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries."
+        },
+        {
+          "source": "Every person needs to know a bit about math, sciences, arts, literature and history in order to stand out in society.",
+          "output": "Every person needs to know a bit about math, sciences, arts, literature and history in order to stand out in society.",
+          "reference": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society."
+        },
+        {
+          "source": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely, that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "output": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely, that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "reference": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive."
+        },
+        {
+          "source": "Disadvantage is parking their car is very difficult.",
+          "output": "Disadvantage is parking their car is very difficult.",
+          "reference": "A disadvantage is that parking their cars is very difficult."
+        },
+        {
+          "source": "Bigger farming are use more chemical product and substance to feed fish.",
+          "output": "Bigger farming uses more chemicals and substances to feed fish.",
+          "reference": "Bigger farming is using more chemical products and substances to feed fish."
+        },
+        {
+          "source": "Forexample, My cousin is 12years old.",
+          "output": "For example, my cousin is 12 years old.",
+          "reference": "For example, my cousin is 12 years old."
+        },
+        {
+          "source": "if it does, you will only get some misundrestood idea about that acticle but not the original one.",
+          "output": "If it does, you will only get some misunderstood idea about that acticle but not the original one.",
+          "reference": "If it does, you will only get some misunderstood idea about that article but not the original one."
+        },
+        {
+          "source": "Secondly, chimp can also present the capability for grammer which means it can demonstrate the ability to combine words and be able to use grammatical constructions.",
+          "output": "Secondly, chimp can also present the capability for grammer which means it can demonstrate the ability to combine words and be able to use grammatical constructions.",
+          "reference": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions."
+        },
+        {
+          "source": "Nevertheless, this city is having a big change.",
+          "output": "Nevertheless, this city is having a big change.",
+          "reference": "Nevertheless, this city is going through a big change."
+        },
+        {
+          "source": "I think to learn facts is only an evidence if the students can work hard and if they are able to keep every detailled information as tought, but it's definitly not an evidence for their intelligence.",
+          "output": "I think to learn facts is only an evidence if the students can work hard and if they are able to keep every detailled information as tought, but it's definitly not an evidence for their intelligence.",
+          "reference": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence."
+        },
+        {
+          "source": "Unforturntly, almost older people can not use internet, in spite of benefit of internet.",
+          "output": "Unforturntly, almost older people can not use internet, in spite of benefit of internet.",
+          "reference": "Unfortunately, in spite of its benefits, many older people can not use the Internet."
+        },
+        {
+          "source": "So, if i have alot of information about this subject, i will taulk too much with knowledge but if i have general information for this subject, i will talk about this subjec with my limited knowlege and this case may be make me shame like when my brother asked me about some thing but i have not alot of information about this thing.",
+          "output": "So, if I have a lot of information about this subject, I will taulk too much with knowledge, but if I have general information for this subject, I will talk about this subject with my limited knowledge, and this case may make me shame, like when my brother asked me about something but I have not a lot of information about this thing.",
+          "reference": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing."
+        },
+        {
+          "source": "becuse if i see some one did somthing to may safe me time and engy and it wok's i will do it.",
+          "output": "Because if I see someone doing something to save me time and energy, I will do it.",
+          "reference": "Because if I see someone did something that may save me time and energy and it works, I will do it."
+        },
+        {
+          "source": "The government should think about the whole nature.",
+          "output": "The government should think about the whole nature.",
+          "reference": "The government should think about all nature."
+        },
+        {
+          "source": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "output": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "reference": "They will not be able to compete with other similar brands and the product will fizzle out or die."
+        },
+        {
+          "source": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "output": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "reference": "People are now opening their eyes to the scenario when we would run out of fuel."
+        },
+        {
+          "source": "For me it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "output": "For me it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "reference": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time."
+        },
+        {
+          "source": "They only care if the effects are good and popular among the crowds.",
+          "output": "They only care if the effects are good and popular among the crowds.",
+          "reference": "They only care if the effects are good and popular among the crowds."
+        },
+        {
+          "source": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "output": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "reference": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options."
+        },
+        {
+          "source": "He said in other words that the more flouride may create damage in human body, specifically the bone.",
+          "output": "He said in other words that the more flouride may create damage in human body, specifically the bone.",
+          "reference": "He said in other words that the more fluoride may create damage in the human body, specifically the bone."
+        },
+        {
+          "source": "When these people create their new ideas others often look very strange on them.",
+          "output": "When these people create their new ideas others often look very strange on them.",
+          "reference": "When these people create their new ideas, others often look very strange to them."
+        },
+        {
+          "source": "You will learn to socialize with people.",
+          "output": "You will learn to socialize with people.",
+          "reference": "You will learn to socialize with people."
+        },
+        {
+          "source": "No ohter transportation concept has been as successful as the car, not only because the goog street and highway system throughout the United States and Europe, but only because off the fact, that people love their cars.",
+          "output": "No other transportation concept has been as successful as the car, not only because the street and highway system throughout the United States and Europe, but only because people love their cars.",
+          "reference": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars."
+        },
+        {
+          "source": "If they prefer to choose cars than motor bike, that means there will be many cars.",
+          "output": "If they prefer to choose cars than motor bike, that means there will be many cars.",
+          "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
+        }
+      ],
+      "kaggle_gc/speakfix": [
+        {
+          "source": "He don't know the answer.",
+          "output": "He doesn't know the answer.",
+          "reference": "He doesn't know the answer."
+        },
+        {
+          "source": "The flowers is blooming in spring.",
+          "output": "The flowers are blooming in spring.",
+          "reference": "The flowers bloom in spring."
+        },
+        {
+          "source": "The train leave at 6 PM.",
+          "output": "The train leaves at 6 PM.",
+          "reference": "The train leaves at 6 PM."
+        },
+        {
+          "source": "The manager gives a speech at the meeting.",
+          "output": "The manager gives a speech at the meeting.",
+          "reference": "The manager gave a speech at the meeting."
+        },
+        {
+          "source": "The company launch a new product next month.",
+          "output": "The company will launch a new product next month.",
+          "reference": "The company will launch a new product next month."
+        },
+        {
+          "source": "The photographer take a picture of the sunset.",
+          "output": "The photographer took a picture of the sunset.",
+          "reference": "The photographer took a picture of the sunset."
+        },
+        {
+          "source": "She has been make dinner for the family.",
+          "output": "She has been making dinner for the family.",
+          "reference": "She has been making dinner for the family."
+        },
+        {
+          "source": "The delivery driver brings the package yesterday.",
+          "output": "The delivery driver brought the package yesterday.",
+          "reference": "The delivery driver brought the package yesterday."
+        },
+        {
+          "source": "The phone is charge on the table.",
+          "output": "The phone is charged on the table.",
+          "reference": "The phone is charging on the table."
+        },
+        {
+          "source": "The dog was dig a hole in the yard.",
+          "output": "The dog was digging a hole in the yard.",
+          "reference": "The dog was digging a hole in the yard."
+        },
+        {
+          "source": "The employees at the store works diligently.",
+          "output": "The employees at the store work diligently.",
+          "reference": "The employees at the store work diligently."
+        },
+        {
+          "source": "The flock of birds fly south for the winter.",
+          "output": "The flock of birds fly south for the winter.",
+          "reference": "The flock of birds flies south for the winter."
+        },
+        {
+          "source": "The stack of papers on the desk need to be sorted.",
+          "output": "The stack of papers on the desk need to be sorted.",
+          "reference": "The stack of papers on the desk needs to be sorted."
+        },
+        {
+          "source": "The team of doctors have developed a new treatment.",
+          "output": "The team of doctors have developed a new treatment.",
+          "reference": "The team of doctors has developed a new treatment."
+        },
+        {
+          "source": "The group of volunteers work tirelessly to help the community.",
+          "output": "The group of volunteers work tirelessly to help the community.",
+          "reference": "The group of volunteers works tirelessly to help the community."
+        },
+        {
+          "source": "The couple plans their wedding together.",
+          "output": "The couple plans their wedding together.",
+          "reference": "The couple plan their wedding together."
+        },
+        {
+          "source": "The series of tests was challenging for the students.",
+          "output": "The series of tests was challenging for the students.",
+          "reference": "The series of tests were challenging for the students."
+        },
+        {
+          "source": "The group of friends meets every week for dinner.",
+          "output": "The group of friends meets every week for dinner.",
+          "reference": "The group of friends meet every week for dinner."
+        },
+        {
+          "source": "The class of students was eager to learn.",
+          "output": "The class of students was eager to learn.",
+          "reference": "The class of students were eager to learn."
+        },
+        {
+          "source": "The group of dancers perform in perfect unison.",
+          "output": "The group of dancers perform in perfect unity.",
+          "reference": "The group of dancers performs in perfect unison."
+        },
+        {
+          "source": "The crowd of spectators cheers for their favorite team.",
+          "output": "The crowd of spectators cheers for their favorite team.",
+          "reference": "The crowd of spectators cheer for their favorite team."
+        },
+        {
+          "source": "The group of birds nests in the trees.",
+          "output": "The group of birds nests in the trees.",
+          "reference": "The group of birds nest in the trees."
+        },
+        {
+          "source": "The assortment of toys in the store is impressive.",
+          "output": "The assortment of toys in the store is impressive.",
+          "reference": "The assortment of toys in the store are impressive."
+        },
+        {
+          "source": "The pair of gloves keeps my hands warm.",
+          "output": "The pair of gloves keeps my hands warm.",
+          "reference": "The pair of gloves keep my hands warm."
+        },
+        {
+          "source": "An apple a day keeps doctor away.",
+          "output": "An apple a day keeps doctor away.",
+          "reference": "An apple a day keeps the doctor away."
+        }
+      ],
+      "jfleg_test_correct/speakfix": [
+        {
+          "source": "New technology has been introduced to society.",
+          "output": "New technology has been introduced to society.",
+          "reference": "New technology has been introduced to society."
+        },
+        {
+          "source": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries.",
+          "output": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries.",
+          "reference": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries."
+        },
+        {
+          "source": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society.",
+          "output": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society.",
+          "reference": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society."
+        },
+        {
+          "source": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "output": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "reference": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive."
+        },
+        {
+          "source": "A disadvantage is that parking their cars is very difficult.",
+          "output": "A disadvantage is that parking their cars is very difficult.",
+          "reference": "A disadvantage is that parking their cars is very difficult."
+        },
+        {
+          "source": "Bigger farming is using more chemical products and substances to feed fish.",
+          "output": "Bigger farming is using more chemical products and substances to feed fish.",
+          "reference": "Bigger farming is using more chemical products and substances to feed fish."
+        },
+        {
+          "source": "For example, my cousin is 12 years old.",
+          "output": "For example, my cousin is 12 years old.",
+          "reference": "For example, my cousin is 12 years old."
+        },
+        {
+          "source": "If it does, you will only get some misunderstood idea about that article but not the original one.",
+          "output": "If it does, you will only get some misunderstood idea about that article but not the original one.",
+          "reference": "If it does, you will only get some misunderstood idea about that article but not the original one."
+        },
+        {
+          "source": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions.",
+          "output": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions.",
+          "reference": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions."
+        },
+        {
+          "source": "Nevertheless, this city is going through a big change.",
+          "output": "Nevertheless, this city is going through a big change.",
+          "reference": "Nevertheless, this city is going through a big change."
+        },
+        {
+          "source": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence.",
+          "output": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence.",
+          "reference": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence."
+        },
+        {
+          "source": "Unfortunately, in spite of its benefits, many older people can not use the Internet.",
+          "output": "Unfortunately, in spite of its benefits, many older people can not use the Internet.",
+          "reference": "Unfortunately, in spite of its benefits, many older people can not use the Internet."
+        },
+        {
+          "source": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing.",
+          "output": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing.",
+          "reference": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing."
+        },
+        {
+          "source": "Because if I see someone did something that may save me time and energy and it works, I will do it.",
+          "output": "Because if I see someone did something that may save me time and energy and it works, I will do it.",
+          "reference": "Because if I see someone did something that may save me time and energy and it works, I will do it."
+        },
+        {
+          "source": "The government should think about all nature.",
+          "output": "The government should think about all nature.",
+          "reference": "The government should think about all nature."
+        },
+        {
+          "source": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "output": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "reference": "They will not be able to compete with other similar brands and the product will fizzle out or die."
+        },
+        {
+          "source": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "output": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "reference": "People are now opening their eyes to the scenario when we would run out of fuel."
+        },
+        {
+          "source": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "output": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "reference": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time."
+        },
+        {
+          "source": "They only care if the effects are good and popular among the crowds.",
+          "output": "They only care if the effects are good and popular among the crowds.",
+          "reference": "They only care if the effects are good and popular among the crowds."
+        },
+        {
+          "source": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "output": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "reference": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options."
+        },
+        {
+          "source": "He said in other words that the more fluoride may create damage in the human body, specifically the bone.",
+          "output": "He said in other words that the more fluoride may create damage in the human body, specifically the bone.",
+          "reference": "He said in other words that the more fluoride may create damage in the human body, specifically the bone."
+        },
+        {
+          "source": "When these people create their new ideas, others often look very strange to them.",
+          "output": "When these people create their new ideas, others often look very strange to them.",
+          "reference": "When these people create their new ideas, others often look very strange to them."
+        },
+        {
+          "source": "You will learn to socialize with people.",
+          "output": "You will learn to socialize with people.",
+          "reference": "You will learn to socialize with people."
+        },
+        {
+          "source": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars.",
+          "output": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars.",
+          "reference": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars."
+        },
+        {
+          "source": "If they prefer to choose cars than motor bikes, that means there will be many cars.",
+          "output": "If they prefer to choose cars than motor bikes, that means there will be many cars.",
+          "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
+        }
+      ],
+      "kaggle_gc_correct/speakfix": [
+        {
+          "source": "He doesn't know the answer.",
+          "output": "He doesn't know the answer.",
+          "reference": "He doesn't know the answer."
+        },
+        {
+          "source": "The flowers bloom in spring.",
+          "output": "The flowers bloom in spring.",
+          "reference": "The flowers bloom in spring."
+        },
+        {
+          "source": "The train leaves at 6 PM.",
+          "output": "The train leaves at 6 PM.",
+          "reference": "The train leaves at 6 PM."
+        },
+        {
+          "source": "The manager gave a speech at the meeting.",
+          "output": "The manager gave a speech at the meeting.",
+          "reference": "The manager gave a speech at the meeting."
+        },
+        {
+          "source": "The company will launch a new product next month.",
+          "output": "The company will launch a new product next month.",
+          "reference": "The company will launch a new product next month."
+        },
+        {
+          "source": "The photographer took a picture of the sunset.",
+          "output": "The photographer took a picture of the sunset.",
+          "reference": "The photographer took a picture of the sunset."
+        },
+        {
+          "source": "She has been making dinner for the family.",
+          "output": "She has been making dinner for the family.",
+          "reference": "She has been making dinner for the family."
+        },
+        {
+          "source": "The delivery driver brought the package yesterday.",
+          "output": "The delivery driver brought the package yesterday.",
+          "reference": "The delivery driver brought the package yesterday."
+        },
+        {
+          "source": "The phone is charging on the table.",
+          "output": "The phone is charging on the table.",
+          "reference": "The phone is charging on the table."
+        },
+        {
+          "source": "The dog was digging a hole in the yard.",
+          "output": "The dog was digging a hole in the yard.",
+          "reference": "The dog was digging a hole in the yard."
+        },
+        {
+          "source": "The employees at the store work diligently.",
+          "output": "The employees at the store work diligently.",
+          "reference": "The employees at the store work diligently."
+        },
+        {
+          "source": "The flock of birds flies south for the winter.",
+          "output": "The flock of birds flies south for the winter.",
+          "reference": "The flock of birds flies south for the winter."
+        },
+        {
+          "source": "The stack of papers on the desk needs to be sorted.",
+          "output": "The stack of papers on the desk needs to be sorted.",
+          "reference": "The stack of papers on the desk needs to be sorted."
+        },
+        {
+          "source": "The team of doctors has developed a new treatment.",
+          "output": "The team of doctors has developed a new treatment.",
+          "reference": "The team of doctors has developed a new treatment."
+        },
+        {
+          "source": "The group of volunteers works tirelessly to help the community.",
+          "output": "The group of volunteers works tirelessly to help the community.",
+          "reference": "The group of volunteers works tirelessly to help the community."
+        },
+        {
+          "source": "The couple plan their wedding together.",
+          "output": "The couple plan their wedding together.",
+          "reference": "The couple plan their wedding together."
+        },
+        {
+          "source": "The series of tests were challenging for the students.",
+          "output": "The series of tests were challenging for the students.",
+          "reference": "The series of tests were challenging for the students."
+        },
+        {
+          "source": "The group of friends meet every week for dinner.",
+          "output": "The group of friends meet every week for dinner.",
+          "reference": "The group of friends meet every week for dinner."
+        },
+        {
+          "source": "The class of students were eager to learn.",
+          "output": "The class of students were eager to learn.",
+          "reference": "The class of students were eager to learn."
+        },
+        {
+          "source": "The group of dancers performs in perfect unison.",
+          "output": "The group of dancers perform in perfect harmony.",
+          "reference": "The group of dancers performs in perfect unison."
+        },
+        {
+          "source": "The crowd of spectators cheer for their favorite team.",
+          "output": "The crowd of spectators cheer for their favorite team.",
+          "reference": "The crowd of spectators cheer for their favorite team."
+        },
+        {
+          "source": "The group of birds nest in the trees.",
+          "output": "The group of birds nest in the trees.",
+          "reference": "The group of birds nest in the trees."
+        },
+        {
+          "source": "The assortment of toys in the store are impressive.",
+          "output": "The assortment of toys in the store are impressive.",
+          "reference": "The assortment of toys in the store are impressive."
+        },
+        {
+          "source": "The pair of gloves keep my hands warm.",
+          "output": "The pair of gloves keep my hands warm.",
+          "reference": "The pair of gloves keep my hands warm."
+        },
+        {
+          "source": "An apple a day keeps the doctor away.",
+          "output": "An apple a day keeps the doctor away.",
+          "reference": "An apple a day keeps the doctor away."
+        }
+      ]
+    },
+    "note": "margin 2.5, punctuation/case-only changes ignored (speech path)"
+  },
+  "v2-margin2.5-text": {
+    "model": "models\\t5-gec-v2-ct2",
+    "backend": "ctranslate2:int8_float32@cpu",
+    "results": {
+      "jfleg_test": {
+        "speakfix": {
+          "bleu_1ref": 0.7231,
+          "bleu_4ref": 0.8709,
+          "exact_any": 0.3574,
+          "unchanged": 0.4833,
+          "truncated": 0.0,
+          "gleu": 0.545,
+          "errant_p": 0.7324,
+          "errant_r": 0.4239,
+          "errant_f05": 0.6393,
+          "errant_p_grammar": 0.7366,
+          "errant_r_grammar": 0.427,
+          "errant_f05_grammar": 0.6433,
+          "seconds": 136.2
+        }
+      },
+      "kaggle_gc": {
+        "speakfix": {
+          "bleu_1ref": 0.7568,
+          "bleu_4ref": 0.7568,
+          "exact_any": 0.41,
+          "unchanged": 0.4633,
+          "truncated": 0.0,
+          "gleu": 0.6102,
+          "errant_p": 0.7783,
+          "errant_r": 0.4076,
+          "errant_f05": 0.6585,
+          "errant_p_grammar": 0.7952,
+          "errant_r_grammar": 0.4144,
+          "errant_f05_grammar": 0.6718,
+          "seconds": 32.7
+        }
+      },
+      "jfleg_test_correct": {
+        "speakfix": {
+          "bleu_1ref": 0.9817,
+          "bleu_4ref": 0.9817,
+          "exact_any": 0.9277,
+          "unchanged": 0.9277,
+          "truncated": 0.0,
+          "gleu": 0.9822,
+          "errant_p": 0.0,
+          "errant_r": 1.0,
+          "errant_f05": 0.0,
+          "errant_p_grammar": 0.0,
+          "errant_r_grammar": 1.0,
+          "errant_f05_grammar": 0.0,
+          "seconds": 256.3
+        }
+      },
+      "kaggle_gc_correct": {
+        "speakfix": {
+          "bleu_1ref": 0.9962,
+          "bleu_4ref": 0.9962,
+          "exact_any": 0.99,
+          "unchanged": 0.99,
+          "truncated": 0.0,
+          "gleu": 0.9963,
+          "errant_p": 0.0,
+          "errant_r": 1.0,
+          "errant_f05": 0.0,
+          "errant_p_grammar": 0.0,
+          "errant_r_grammar": 1.0,
+          "errant_f05_grammar": 0.0,
+          "seconds": 60.1
+        }
+      }
+    },
+    "examples": {
+      "jfleg_test/speakfix": [
+        {
+          "source": "New and new technology has been introduced to the society.",
+          "output": "New and new technology has been introduced to the society.",
+          "reference": "New technology has been introduced to society."
+        },
+        {
+          "source": "One possible outcome is that an environmentally-induced reduction in motorization levels in the richer countries will outweigh any rise in motorization levels in the poorer countries.",
+          "output": "One possible outcome is that an environmentally-induced reduction in motorization levels in the richer countries will outweigh any rise in motorization levels in the poorer countries.",
+          "reference": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries."
+        },
+        {
+          "source": "Every person needs to know a bit about math, sciences, arts, literature and history in order to stand out in society.",
+          "output": "Every person needs to know a bit about math, sciences, arts, literature and history in order to stand out in society.",
+          "reference": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society."
+        },
+        {
+          "source": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely, that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "output": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "reference": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive."
+        },
+        {
+          "source": "Disadvantage is parking their car is very difficult.",
+          "output": "Disadvantage is parking their car is very difficult.",
+          "reference": "A disadvantage is that parking their cars is very difficult."
+        },
+        {
+          "source": "Bigger farming are use more chemical product and substance to feed fish.",
+          "output": "Bigger farming uses more chemicals and substances to feed fish.",
+          "reference": "Bigger farming is using more chemical products and substances to feed fish."
+        },
+        {
+          "source": "Forexample, My cousin is 12years old.",
+          "output": "For example, my cousin is 12 years old.",
+          "reference": "For example, my cousin is 12 years old."
+        },
+        {
+          "source": "if it does, you will only get some misundrestood idea about that acticle but not the original one.",
+          "output": "If it does, you will only get some misunderstood idea about that acticle but not the original one.",
+          "reference": "If it does, you will only get some misunderstood idea about that article but not the original one."
+        },
+        {
+          "source": "Secondly, chimp can also present the capability for grammer which means it can demonstrate the ability to combine words and be able to use grammatical constructions.",
+          "output": "Secondly, chimp can also present the capability for grammer which means it can demonstrate the ability to combine words and be able to use grammatical constructions.",
+          "reference": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions."
+        },
+        {
+          "source": "Nevertheless, this city is having a big change.",
+          "output": "Nevertheless, this city is having a big change.",
+          "reference": "Nevertheless, this city is going through a big change."
+        },
+        {
+          "source": "I think to learn facts is only an evidence if the students can work hard and if they are able to keep every detailled information as tought, but it's definitly not an evidence for their intelligence.",
+          "output": "I think to learn facts is only an evidence if the students can work hard and if they are able to keep every detailled information as tought, but it's definitly not an evidence for their intelligence.",
+          "reference": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence."
+        },
+        {
+          "source": "Unforturntly, almost older people can not use internet, in spite of benefit of internet.",
+          "output": "Unforturntly, almost older people can not use internet, in spite of benefit of internet.",
+          "reference": "Unfortunately, in spite of its benefits, many older people can not use the Internet."
+        },
+        {
+          "source": "So, if i have alot of information about this subject, i will taulk too much with knowledge but if i have general information for this subject, i will talk about this subjec with my limited knowlege and this case may be make me shame like when my brother asked me about some thing but i have not alot of information about this thing.",
+          "output": "So, if I have a lot of information about this subject, I will taulk too much with knowledge, but if I have general information for this subject, I will talk about this subject with my limited knowledge, and this case may make me shame, like when my brother asked me about something but I have not a lot of information about this thing.",
+          "reference": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing."
+        },
+        {
+          "source": "becuse if i see some one did somthing to may safe me time and engy and it wok's i will do it.",
+          "output": "Because if I see someone doing something to save me time and energy, I will do it.",
+          "reference": "Because if I see someone did something that may save me time and energy and it works, I will do it."
+        },
+        {
+          "source": "The government should think about the whole nature.",
+          "output": "The government should think about the whole nature.",
+          "reference": "The government should think about all nature."
+        },
+        {
+          "source": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "output": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "reference": "They will not be able to compete with other similar brands and the product will fizzle out or die."
+        },
+        {
+          "source": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "output": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "reference": "People are now opening their eyes to the scenario when we would run out of fuel."
+        },
+        {
+          "source": "For me it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "output": "For me it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "reference": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time."
+        },
+        {
+          "source": "They only care if the effects are good and popular among the crowds.",
+          "output": "They only care if the effects are good and popular among the crowds.",
+          "reference": "They only care if the effects are good and popular among the crowds."
+        },
+        {
+          "source": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "output": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "reference": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options."
+        },
+        {
+          "source": "He said in other words that the more flouride may create damage in human body, specifically the bone.",
+          "output": "He said in other words that the more flouride may create damage in human body, specifically the bone.",
+          "reference": "He said in other words that the more fluoride may create damage in the human body, specifically the bone."
+        },
+        {
+          "source": "When these people create their new ideas others often look very strange on them.",
+          "output": "When these people create their new ideas others often look very strange on them.",
+          "reference": "When these people create their new ideas, others often look very strange to them."
+        },
+        {
+          "source": "You will learn to socialize with people.",
+          "output": "You will learn to socialize with people.",
+          "reference": "You will learn to socialize with people."
+        },
+        {
+          "source": "No ohter transportation concept has been as successful as the car, not only because the goog street and highway system throughout the United States and Europe, but only because off the fact, that people love their cars.",
+          "output": "No other transportation concept has been as successful as the car, not only because the street and highway system throughout the United States and Europe, but only because people love their cars.",
+          "reference": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars."
+        },
+        {
+          "source": "If they prefer to choose cars than motor bike, that means there will be many cars.",
+          "output": "If they prefer to choose cars than motor bike, that means there will be many cars.",
+          "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
+        }
+      ],
+      "kaggle_gc/speakfix": [
+        {
+          "source": "He don't know the answer.",
+          "output": "He doesn't know the answer.",
+          "reference": "He doesn't know the answer."
+        },
+        {
+          "source": "The flowers is blooming in spring.",
+          "output": "The flowers are blooming in spring.",
+          "reference": "The flowers bloom in spring."
+        },
+        {
+          "source": "The train leave at 6 PM.",
+          "output": "The train leaves at 6 PM.",
+          "reference": "The train leaves at 6 PM."
+        },
+        {
+          "source": "The manager gives a speech at the meeting.",
+          "output": "The manager gives a speech at the meeting.",
+          "reference": "The manager gave a speech at the meeting."
+        },
+        {
+          "source": "The company launch a new product next month.",
+          "output": "The company will launch a new product next month.",
+          "reference": "The company will launch a new product next month."
+        },
+        {
+          "source": "The photographer take a picture of the sunset.",
+          "output": "The photographer took a picture of the sunset.",
+          "reference": "The photographer took a picture of the sunset."
+        },
+        {
+          "source": "She has been make dinner for the family.",
+          "output": "She has been making dinner for the family.",
+          "reference": "She has been making dinner for the family."
+        },
+        {
+          "source": "The delivery driver brings the package yesterday.",
+          "output": "The delivery driver brought the package yesterday.",
+          "reference": "The delivery driver brought the package yesterday."
+        },
+        {
+          "source": "The phone is charge on the table.",
+          "output": "The phone is charged on the table.",
+          "reference": "The phone is charging on the table."
+        },
+        {
+          "source": "The dog was dig a hole in the yard.",
+          "output": "The dog was digging a hole in the yard.",
+          "reference": "The dog was digging a hole in the yard."
+        },
+        {
+          "source": "The employees at the store works diligently.",
+          "output": "The employees at the store work diligently.",
+          "reference": "The employees at the store work diligently."
+        },
+        {
+          "source": "The flock of birds fly south for the winter.",
+          "output": "The flock of birds fly south for the winter.",
+          "reference": "The flock of birds flies south for the winter."
+        },
+        {
+          "source": "The stack of papers on the desk need to be sorted.",
+          "output": "The stack of papers on the desk need to be sorted.",
+          "reference": "The stack of papers on the desk needs to be sorted."
+        },
+        {
+          "source": "The team of doctors have developed a new treatment.",
+          "output": "The team of doctors have developed a new treatment.",
+          "reference": "The team of doctors has developed a new treatment."
+        },
+        {
+          "source": "The group of volunteers work tirelessly to help the community.",
+          "output": "The group of volunteers work tirelessly to help the community.",
+          "reference": "The group of volunteers works tirelessly to help the community."
+        },
+        {
+          "source": "The couple plans their wedding together.",
+          "output": "The couple plans their wedding together.",
+          "reference": "The couple plan their wedding together."
+        },
+        {
+          "source": "The series of tests was challenging for the students.",
+          "output": "The series of tests was challenging for the students.",
+          "reference": "The series of tests were challenging for the students."
+        },
+        {
+          "source": "The group of friends meets every week for dinner.",
+          "output": "The group of friends meets every week for dinner.",
+          "reference": "The group of friends meet every week for dinner."
+        },
+        {
+          "source": "The class of students was eager to learn.",
+          "output": "The class of students was eager to learn.",
+          "reference": "The class of students were eager to learn."
+        },
+        {
+          "source": "The group of dancers perform in perfect unison.",
+          "output": "The group of dancers perform in perfect unity.",
+          "reference": "The group of dancers performs in perfect unison."
+        },
+        {
+          "source": "The crowd of spectators cheers for their favorite team.",
+          "output": "The crowd of spectators cheers for their favorite team.",
+          "reference": "The crowd of spectators cheer for their favorite team."
+        },
+        {
+          "source": "The group of birds nests in the trees.",
+          "output": "The group of birds nests in the trees.",
+          "reference": "The group of birds nest in the trees."
+        },
+        {
+          "source": "The assortment of toys in the store is impressive.",
+          "output": "The assortment of toys in the store is impressive.",
+          "reference": "The assortment of toys in the store are impressive."
+        },
+        {
+          "source": "The pair of gloves keeps my hands warm.",
+          "output": "The pair of gloves keeps my hands warm.",
+          "reference": "The pair of gloves keep my hands warm."
+        },
+        {
+          "source": "An apple a day keeps doctor away.",
+          "output": "An apple a day keeps doctor away.",
+          "reference": "An apple a day keeps the doctor away."
+        }
+      ],
+      "jfleg_test_correct/speakfix": [
+        {
+          "source": "New technology has been introduced to society.",
+          "output": "New technology has been introduced to society.",
+          "reference": "New technology has been introduced to society."
+        },
+        {
+          "source": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries.",
+          "output": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries.",
+          "reference": "One possible outcome is that an environmentally-induced reduction in motorization levels in richer countries will outweigh any rise in motorization levels in poorer countries."
+        },
+        {
+          "source": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society.",
+          "output": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society.",
+          "reference": "Every person needs to know a bit about math, science, art, literature and history in order to stand out in society."
+        },
+        {
+          "source": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "output": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive.",
+          "reference": "While the travel company will most likely show them some interesting sites in order for their customers to advertise for their company to their family and friends, it is highly unlikely that the company will tell about the sites that were not included in the tour -- for example due to entrance fees that would make the total package price overly expensive."
+        },
+        {
+          "source": "A disadvantage is that parking their cars is very difficult.",
+          "output": "A disadvantage is that parking their cars is very difficult.",
+          "reference": "A disadvantage is that parking their cars is very difficult."
+        },
+        {
+          "source": "Bigger farming is using more chemical products and substances to feed fish.",
+          "output": "Bigger farming is using more chemical products and substances to feed fish.",
+          "reference": "Bigger farming is using more chemical products and substances to feed fish."
+        },
+        {
+          "source": "For example, my cousin is 12 years old.",
+          "output": "For example, my cousin is 12 years old.",
+          "reference": "For example, my cousin is 12 years old."
+        },
+        {
+          "source": "If it does, you will only get some misunderstood idea about that article but not the original one.",
+          "output": "If it does, you will only get some misunderstood idea about that article but not the original one.",
+          "reference": "If it does, you will only get some misunderstood idea about that article but not the original one."
+        },
+        {
+          "source": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions.",
+          "output": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions.",
+          "reference": "Secondly, chimps are also capable of learning grammar, meaning they can demonstrate the ability to combine words and utilize grammatical constructions."
+        },
+        {
+          "source": "Nevertheless, this city is going through a big change.",
+          "output": "Nevertheless, this city is going through a big change.",
+          "reference": "Nevertheless, this city is going through a big change."
+        },
+        {
+          "source": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence.",
+          "output": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence.",
+          "reference": "I think to learn facts is only evidence if the students can work hard and if they are able to keep every detailed information taught, but it's definitely not evidence of their intelligence."
+        },
+        {
+          "source": "Unfortunately, in spite of its benefits, many older people can not use the Internet.",
+          "output": "Unfortunately, in spite of its benefits, many older people can not use the Internet.",
+          "reference": "Unfortunately, in spite of its benefits, many older people can not use the Internet."
+        },
+        {
+          "source": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing.",
+          "output": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing.",
+          "reference": "So, if I have a lot of information about this subject, I will talk a lot with knowledge but if I have general information for this subject, I will talk about this subject with my limited knowledge and this case may make me shameful like when my brother asked me about some thing but I did not have a lot of information about this thing."
+        },
+        {
+          "source": "Because if I see someone did something that may save me time and energy and it works, I will do it.",
+          "output": "Because if I see someone did something that may save me time and energy and it works, I will do it.",
+          "reference": "Because if I see someone did something that may save me time and energy and it works, I will do it."
+        },
+        {
+          "source": "The government should think about all nature.",
+          "output": "The government should think about all nature.",
+          "reference": "The government should think about all nature."
+        },
+        {
+          "source": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "output": "They will not be able to compete with other similar brands and the product will fizzle out or die.",
+          "reference": "They will not be able to compete with other similar brands and the product will fizzle out or die."
+        },
+        {
+          "source": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "output": "People are now opening their eyes to the scenario when we would run out of fuel.",
+          "reference": "People are now opening their eyes to the scenario when we would run out of fuel."
+        },
+        {
+          "source": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "output": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time.",
+          "reference": "For me, it was great because I need to talk on the phone locally and nationally for long periods of time."
+        },
+        {
+          "source": "They only care if the effects are good and popular among the crowds.",
+          "output": "They only care if the effects are good and popular among the crowds.",
+          "reference": "They only care if the effects are good and popular among the crowds."
+        },
+        {
+          "source": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "output": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options.",
+          "reference": "That is why calculated risks, as one could call them, are the predecessors of big success, because they get people's attention by giving people new options."
+        },
+        {
+          "source": "He said in other words that the more fluoride may create damage in the human body, specifically the bone.",
+          "output": "He said in other words that the more fluoride may create damage in the human body, specifically the bone.",
+          "reference": "He said in other words that the more fluoride may create damage in the human body, specifically the bone."
+        },
+        {
+          "source": "When these people create their new ideas, others often look very strange to them.",
+          "output": "When these people create their new ideas, others often look very strange to them.",
+          "reference": "When these people create their new ideas, others often look very strange to them."
+        },
+        {
+          "source": "You will learn to socialize with people.",
+          "output": "You will learn to socialize with people.",
+          "reference": "You will learn to socialize with people."
+        },
+        {
+          "source": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars.",
+          "output": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars.",
+          "reference": "No other transportation concept has been as successful as the car, not only because they can go on the street and highway system throughout the United States and Europe, but because of the fact that people love their cars."
+        },
+        {
+          "source": "If they prefer to choose cars than motor bikes, that means there will be many cars.",
+          "output": "If they prefer to choose cars than motor bikes, that means there will be many cars.",
+          "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
+        }
+      ],
+      "kaggle_gc_correct/speakfix": [
+        {
+          "source": "He doesn't know the answer.",
+          "output": "He doesn't know the answer.",
+          "reference": "He doesn't know the answer."
+        },
+        {
+          "source": "The flowers bloom in spring.",
+          "output": "The flowers bloom in spring.",
+          "reference": "The flowers bloom in spring."
+        },
+        {
+          "source": "The train leaves at 6 PM.",
+          "output": "The train leaves at 6 PM.",
+          "reference": "The train leaves at 6 PM."
+        },
+        {
+          "source": "The manager gave a speech at the meeting.",
+          "output": "The manager gave a speech at the meeting.",
+          "reference": "The manager gave a speech at the meeting."
+        },
+        {
+          "source": "The company will launch a new product next month.",
+          "output": "The company will launch a new product next month.",
+          "reference": "The company will launch a new product next month."
+        },
+        {
+          "source": "The photographer took a picture of the sunset.",
+          "output": "The photographer took a picture of the sunset.",
+          "reference": "The photographer took a picture of the sunset."
+        },
+        {
+          "source": "She has been making dinner for the family.",
+          "output": "She has been making dinner for the family.",
+          "reference": "She has been making dinner for the family."
+        },
+        {
+          "source": "The delivery driver brought the package yesterday.",
+          "output": "The delivery driver brought the package yesterday.",
+          "reference": "The delivery driver brought the package yesterday."
+        },
+        {
+          "source": "The phone is charging on the table.",
+          "output": "The phone is charging on the table.",
+          "reference": "The phone is charging on the table."
+        },
+        {
+          "source": "The dog was digging a hole in the yard.",
+          "output": "The dog was digging a hole in the yard.",
+          "reference": "The dog was digging a hole in the yard."
+        },
+        {
+          "source": "The employees at the store work diligently.",
+          "output": "The employees at the store work diligently.",
+          "reference": "The employees at the store work diligently."
+        },
+        {
+          "source": "The flock of birds flies south for the winter.",
+          "output": "The flock of birds flies south for the winter.",
+          "reference": "The flock of birds flies south for the winter."
+        },
+        {
+          "source": "The stack of papers on the desk needs to be sorted.",
+          "output": "The stack of papers on the desk needs to be sorted.",
+          "reference": "The stack of papers on the desk needs to be sorted."
+        },
+        {
+          "source": "The team of doctors has developed a new treatment.",
+          "output": "The team of doctors has developed a new treatment.",
+          "reference": "The team of doctors has developed a new treatment."
+        },
+        {
+          "source": "The group of volunteers works tirelessly to help the community.",
+          "output": "The group of volunteers works tirelessly to help the community.",
+          "reference": "The group of volunteers works tirelessly to help the community."
+        },
+        {
+          "source": "The couple plan their wedding together.",
+          "output": "The couple plan their wedding together.",
+          "reference": "The couple plan their wedding together."
+        },
+        {
+          "source": "The series of tests were challenging for the students.",
+          "output": "The series of tests were challenging for the students.",
+          "reference": "The series of tests were challenging for the students."
+        },
+        {
+          "source": "The group of friends meet every week for dinner.",
+          "output": "The group of friends meet every week for dinner.",
+          "reference": "The group of friends meet every week for dinner."
+        },
+        {
+          "source": "The class of students were eager to learn.",
+          "output": "The class of students were eager to learn.",
+          "reference": "The class of students were eager to learn."
+        },
+        {
+          "source": "The group of dancers performs in perfect unison.",
+          "output": "The group of dancers perform in perfect harmony.",
+          "reference": "The group of dancers performs in perfect unison."
+        },
+        {
+          "source": "The crowd of spectators cheer for their favorite team.",
+          "output": "The crowd of spectators cheer for their favorite team.",
+          "reference": "The crowd of spectators cheer for their favorite team."
+        },
+        {
+          "source": "The group of birds nest in the trees.",
+          "output": "The group of birds nest in the trees.",
+          "reference": "The group of birds nest in the trees."
+        },
+        {
+          "source": "The assortment of toys in the store are impressive.",
+          "output": "The assortment of toys in the store are impressive.",
+          "reference": "The assortment of toys in the store are impressive."
+        },
+        {
+          "source": "The pair of gloves keep my hands warm.",
+          "output": "The pair of gloves keep my hands warm.",
+          "reference": "The pair of gloves keep my hands warm."
+        },
+        {
+          "source": "An apple a day keeps the doctor away.",
+          "output": "An apple a day keeps the doctor away.",
+          "reference": "An apple a day keeps the doctor away."
+        }
+      ]
+    }
   }
 }
