@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Tooling caches
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Models are large artifacts: prepare them with scripts/prepare_models.py
+models/
+
+# Secrets and local config
+.env
+
+# Never commit audio or transcripts of children
+*.wav
+*.mp3
+*.m4a
+*.webm
+*.ogg
+recordings/
+
+# Model backups made by scripts/backup_models.py (store them off the laptop)
+backups/

@@ -1,0 +1,2 @@
+# Store text files with LF line endings: CI and Docker builds run on Linux.
+* text=auto eol=lf

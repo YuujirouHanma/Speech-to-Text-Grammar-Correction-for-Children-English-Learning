@@ -1,0 +1,104 @@
+# SpeakFix stack.
+#   CPU API only:            docker compose up -d --build
+#   GPU API:                 docker compose --profile gpu up -d --build api-gpu
+#   + Prometheus/Grafana:    docker compose --profile monitoring up -d
+# Models must be prepared first into ./models (see README: scripts/prepare_models.py).
+
+x-hardening: &hardening
+  read_only: true
+  # /tmp lives in RAM: any temporary audio spill never touches a disk.
+  tmpfs:
+    - /tmp:size=256m,mode=1777
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  restart: unless-stopped
+
+x-api-env: &api-env
+  SPEAKFIX_ENVIRONMENT: prod
+  SPEAKFIX_LOG_JSON: "true"
+  SPEAKFIX_API_KEYS: ${SPEAKFIX_API_KEYS:-}
+  SPEAKFIX_CORS_ORIGINS: ${SPEAKFIX_CORS_ORIGINS:-}
+  SPEAKFIX_RATE_LIMIT_PER_MINUTE: ${SPEAKFIX_RATE_LIMIT_PER_MINUTE:-60}
+  SPEAKFIX_REQUIRE_CONSENT: ${SPEAKFIX_REQUIRE_CONSENT:-true}
+  SPEAKFIX_ALLOW_CLOUD_STT: "false"
+  SPEAKFIX_T5_MODEL_NAME: ${SPEAKFIX_T5_MODEL_NAME:-t5-gec-v2}
+  FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
+
+services:
+  api:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: speakfix:cpu
+    environment:
+      <<: *api-env
+      SPEAKFIX_WHISPER_MODEL: ${SPEAKFIX_WHISPER_MODEL:-base.en}
+    ports:
+      - "${SPEAKFIX_PORT:-8000}:8000"
+    volumes:
+      - ./models:/models:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 3g
+
+  api-gpu:
+    <<: *hardening
+    profiles: ["gpu"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.gpu
+    image: speakfix:gpu
+    environment:
+      <<: *api-env
+      SPEAKFIX_WHISPER_MODEL: ${SPEAKFIX_WHISPER_MODEL:-small.en}
+    ports:
+      - "${SPEAKFIX_GPU_PORT:-8001}:8000"
+    volumes:
+      - ./models:/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  prometheus:
+    profiles: ["monitoring"]
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    profiles: ["monitoring"]
+    image: grafana/grafana:12.1.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:

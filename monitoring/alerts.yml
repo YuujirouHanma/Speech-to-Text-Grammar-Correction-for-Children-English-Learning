@@ -1,0 +1,46 @@
+groups:
+  - name: speakfix
+    rules:
+      - alert: SpeakFixDown
+        expr: up{job="speakfix"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "SpeakFix instance {{ $labels.instance }} is down"
+
+      - alert: SpeakFixModelNotReady
+        expr: min by (instance, component) (speakfix_model_ready) < 1
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Model component {{ $labels.component }} not loaded on {{ $labels.instance }}"
+
+      - alert: SpeakFixHighLatency
+        expr: |
+          histogram_quantile(0.95, sum by (le, route) (rate(speakfix_http_request_duration_seconds_bucket{route=~"/v1/.*"}[5m]))) > 8
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "p95 latency of {{ $labels.route }} above 8s"
+
+      - alert: SpeakFixHighErrorRate
+        expr: |
+          sum(rate(speakfix_http_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(speakfix_http_requests_total[5m])), 1e-9) > 0.05
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "More than 5% of requests fail with 5xx"
+
+      - alert: SpeakFixOutOfMemory
+        expr: increase(speakfix_inference_errors_total{kind="oom"}[15m]) > 0
+        labels: { severity: warning }
+        annotations:
+          summary: "Inference OOM events on {{ $labels.instance }} (lower inference_workers or batch size)"
+
+      - alert: SpeakFixMemoryHigh
+        expr: speakfix_process_resident_memory_bytes > 2.5e9
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Resident memory above 2.5 GB on {{ $labels.instance }}"

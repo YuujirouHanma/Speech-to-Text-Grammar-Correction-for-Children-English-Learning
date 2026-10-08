@@ -1,0 +1,20 @@
+# Ruff is the project linter (see pyproject.toml). This file only aligns the
+# editor's pylint integration with the project's conventions.
+[MAIN]
+init-hook="import sys; sys.path.insert(0, 'speakfix/src'); sys.path.insert(0, 'src')"
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    import-outside-toplevel,
+    broad-exception-caught,
+    too-many-instance-attributes,
+    too-many-locals,
+    too-many-arguments,
+    too-few-public-methods,
+    line-too-long
+
+[FORMAT]
+max-line-length=100
