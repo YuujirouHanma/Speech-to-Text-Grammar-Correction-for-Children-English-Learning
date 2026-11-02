@@ -91,5 +91,9 @@ async def info(container: ContainerDep) -> InfoResponse:
             "stores_audio": False,
             "job_result_ttl_seconds": s.job_ttl_seconds,
         },
-        ui={"demo_mode": s.demo_mode, "feedback_language": s.feedback_language},
+        ui={
+            "demo_mode": s.demo_mode,
+            "feedback_language": s.feedback_language,
+            "api_key_required": s.auth_enabled,
+        },
     )

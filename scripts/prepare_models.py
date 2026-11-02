@@ -53,9 +53,11 @@ def _link_or_copy(src: Path, dst: Path) -> None:
 
 def _update_manifest(models_dir: Path, key: str, entry: dict[str, object]) -> None:
     manifest_path = models_dir / "MANIFEST.json"
-    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    manifest = (
+        json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
+    )
     manifest[key] = entry
-    manifest_path.write_text(json.dumps(manifest, indent=2))
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
 def prepare_t5(source: Path, models_dir: Path, quantization: str, name: str = "t5-gec") -> None:

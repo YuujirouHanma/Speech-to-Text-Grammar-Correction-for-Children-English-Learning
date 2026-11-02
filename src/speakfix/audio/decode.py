@@ -7,6 +7,7 @@ is required and the child's recording is never written to disk.
 from __future__ import annotations
 
 import io
+from typing import Any
 
 import numpy as np
 
@@ -46,6 +47,45 @@ def probe_duration(data: bytes) -> float | None:
     return None
 
 
+def _resampling_graph(frame: Any, sample_rate: int) -> Any:
+    """Filter graph from ``frame``'s format to mono s16 at ``sample_rate``.
+
+    The same pipeline as ``av.AudioResampler``, which cannot limit its threads: it
+    starts one per CPU core for every file and keeps them until garbage collection,
+    which adds up to hundreds of threads under load.
+    """
+    import av
+
+    graph = av.filter.Graph()
+    graph.threads = 1
+    time_base = {"time_base": str(frame.time_base)} if frame.time_base else {}
+    source = graph.add(
+        "abuffer",
+        sample_rate=str(frame.sample_rate),
+        sample_fmt=frame.format.name,
+        channel_layout=frame.layout.name,
+        **time_base,
+    )
+    convert = graph.add(
+        "aformat", sample_rates=str(sample_rate), sample_fmts="s16", channel_layouts="mono"
+    )
+    sink = graph.add("abuffersink")
+    source.link_to(convert)
+    convert.link_to(sink)
+    graph.configure()
+    return graph
+
+
+def _pull_pcm(graph: Any) -> list[np.ndarray]:
+    """All samples the filter graph can output right now."""
+    chunks = []
+    while True:
+        try:
+            chunks.append(graph.pull().to_ndarray().reshape(-1))
+        except (BlockingIOError, EOFError):  # needs more input / fully flushed
+            return chunks
+
+
 def decode_audio(
     data: bytes, sample_rate: int = TARGET_SAMPLE_RATE, *, max_seconds: float | None = None
 ) -> FloatArray:
@@ -73,21 +113,24 @@ def decode_audio(
     chunks: list[np.ndarray] = []
     total = 0
     try:
-        resampler = av.AudioResampler(format="s16", layout="mono", rate=sample_rate)
+        graph = None
         with av.open(io.BytesIO(data), mode="r") as container:
             stream = next((s for s in container.streams if s.type == "audio"), None)
             if stream is None:
                 raise InvalidAudioError("The file contains no audio stream.")
             for frame in container.decode(stream):
                 frame.pts = None
-                for out in resampler.resample(frame):
-                    pcm = out.to_ndarray().reshape(-1)
+                if graph is None:
+                    graph = _resampling_graph(frame, sample_rate)
+                graph.push(frame)
+                for pcm in _pull_pcm(graph):
                     chunks.append(pcm)
                     total += pcm.size
                 if limit is not None and total > limit:
                     raise AudioDurationError(f"Audio is longer than the {max_seconds:.0f} s limit.")
-            for out in resampler.resample(None):
-                chunks.append(out.to_ndarray().reshape(-1))
+            if graph is not None:
+                graph.push(None)
+                chunks.extend(_pull_pcm(graph))
     except (InvalidAudioError, AudioDurationError):
         raise
     except Exception as exc:

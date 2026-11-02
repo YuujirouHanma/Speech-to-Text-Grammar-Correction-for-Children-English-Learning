@@ -6,14 +6,23 @@ import numpy as np
 import pytest
 
 from speakfix.config import Device, SttEngine
-from speakfix.domain.errors import CloudSttDisabledError, InferenceError, InferenceTimeoutError
+from speakfix.domain.errors import (
+    CloudSttDisabledError,
+    InferenceError,
+    InferenceTimeoutError,
+    ResourceExhaustedError,
+)
 from speakfix.inference.cloud_stt import DeepgramSpeechToText
 from speakfix.inference.devices import (
     resolve_device,
     resolve_t5_compute_type,
     resolve_whisper_compute_type,
 )
-from speakfix.inference.factory import build_stt_engine, resolve_whisper_model
+from speakfix.inference.factory import (
+    build_stt_engine,
+    choose_whisper_model,
+    resolve_whisper_model,
+)
 from speakfix.inference.whisper_stt import _display_name
 from tests.conftest import make_settings
 
@@ -151,3 +160,54 @@ def test_auto_device_falls_back_to_cpu_when_cuda_libraries_missing(
         factory.build_seq2seq_backend(
             CorrectorBackend.CT2, make_settings(models_dir=tmp_path, device=Device.CUDA)
         )
+
+
+def test_choose_whisper_model_per_device(tmp_path: Path) -> None:
+    assert choose_whisper_model("small.en", "cpu", tmp_path) == "small.en"  # explicit wins
+    assert choose_whisper_model("auto", "cpu", tmp_path) == "base.en"
+    # GPU without a prepared small.en: stay on base.en, an offline server must still start.
+    assert choose_whisper_model("auto", "cuda", tmp_path) == "base.en"
+    snapshot = tmp_path / "models--Systran--faster-whisper-small.en" / "snapshots" / "abc123"
+    snapshot.mkdir(parents=True)
+    (snapshot / "model.bin").write_bytes(b"x")
+    assert choose_whisper_model("auto", "cuda", tmp_path) == "small.en"
+    assert choose_whisper_model("auto", "cpu", tmp_path) == "base.en"
+
+
+@pytest.mark.parametrize(
+    ("message", "error"),
+    [
+        ("CUDA failed: out of memory", ResourceExhaustedError),
+        ("mkl_malloc: failed to allocate memory", ResourceExhaustedError),
+        ("bad allocation", ResourceExhaustedError),
+        ("something else went wrong", InferenceError),
+    ],
+)
+def test_ct2_runtime_errors_are_classified(message: str, error: type[Exception]) -> None:
+    from speakfix.inference.t5_ct2 import _inference_error
+
+    assert type(_inference_error(RuntimeError(message))) is error
+
+
+@pytest.mark.parametrize(
+    ("raised", "error"),
+    [
+        (MemoryError(), ResourceExhaustedError),
+        # onnxruntime (the VAD) raises its own types, which are not RuntimeError.
+        (Exception("[ONNXRuntimeError] : 1 : FAIL : bad allocation"), ResourceExhaustedError),
+        (RuntimeError("something else went wrong"), InferenceError),
+    ],
+)
+def test_whisper_failures_are_classified(raised: Exception, error: type[Exception]) -> None:
+    from speakfix.inference.whisper_stt import WhisperSpeechToText
+
+    class Failing:
+        def transcribe(self, *_args: object, **_kwargs: object) -> None:
+            raise raised
+
+    stt = WhisperSpeechToText.__new__(WhisperSpeechToText)
+    stt._model = Failing()
+    stt._language, stt._beam_size, stt._vad, stt._prompt = "en", 1, False, None
+    with pytest.raises(error) as caught:
+        stt.transcribe(SILENCE, 16_000)
+    assert type(caught.value) is error

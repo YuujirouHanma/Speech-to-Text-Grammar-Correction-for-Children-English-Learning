@@ -50,6 +50,8 @@ class Transcriber:
 
         fallback = self._get_fallback()
         if fallback is None:
+            if isinstance(primary_error, SpeakFixError):
+                raise primary_error  # keeps its meaning, e.g. 503 when out of memory
             raise InferenceError("Transcription failed.") from primary_error
         FALLBACKS.labels(component="stt").inc()
         with track_stage("stt"):

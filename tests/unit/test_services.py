@@ -13,6 +13,7 @@ from speakfix.domain.errors import (
     JobNotFoundError,
     ModelNotReadyError,
     QueueFullError,
+    ResourceExhaustedError,
     ServerBusyError,
 )
 from speakfix.services.analysis import AnalysisService
@@ -268,3 +269,12 @@ def test_edit_descriptions_follow_the_feedback_language() -> None:
     assert CorrectionOut.from_domain(correction).edits[0].description == "Subject-verb agreement"
     indonesian = CorrectionOut.from_domain(correction, "id").edits[0].description
     assert indonesian == "Kata kerja harus sesuai dengan subjek"
+
+
+def test_transcriber_keeps_the_out_of_memory_error_without_fallback() -> None:
+    class OutOfMemory(FakeSTT):
+        def transcribe(self, audio: np.ndarray, sample_rate: int):  # type: ignore[no-untyped-def]
+            raise ResourceExhaustedError("out of memory")
+
+    with pytest.raises(ResourceExhaustedError):  # 503 "try again", not a generic 500
+        Transcriber(OutOfMemory()).transcribe(np.zeros(16000, dtype=np.float32), 16000)

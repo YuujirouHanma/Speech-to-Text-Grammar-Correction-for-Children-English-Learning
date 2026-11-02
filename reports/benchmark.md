@@ -1,52 +1,60 @@
 # Benchmark
 
-Laptop: Intel i7-13620H, RTX 4070 Laptop (8 GB), Windows 11, on AC power.
-Absolute numbers depend heavily on background load, so compare runtimes
-**within one run**, not across runs.
+Laptop: Intel i7-13620H, RTX 4070 Laptop (8 GB), 16 GB RAM, Windows 11, 2026-11-02.
+One job at a time; a browser and the editor stayed open, as on a normal day.
+Absolute numbers depend on background load, so compare runtimes within one table.
+GPU runs use the cuBLAS/cuDNN DLLs bundled with the PyTorch CUDA wheel.
 
-## Run 2026-10-08: CPU vs GPU (t5-gec-v2, laptop busy with a browser open)
+## Grammar correction: model generation only
 
-`python scripts/benchmark.py --backends ct2-cpu ct2-cuda torch-cpu torch-cuda --whisper base.en small.en --whisper-devices cpu cuda --audio ../recorded.wav`
+The fair comparison with the original PyTorch pipeline: no confidence filter, no error types.
 
-GPU runs use the cuBLAS/cuDNN DLLs bundled with the PyTorch CUDA wheel (no CUDA toolkit installed).
-
-### Grammar correction (50 JFLEG sentences, beam 5)
+`python scripts/benchmark.py --backends ct2-cpu ct2-cuda torch-cpu torch-cuda`
 
 | runtime | backend | load_s | p50_ms | p95_ms | paragraph_8_sent_ms | rss_delta_mb |
 |---|---|---|---|---|---|---|
-| ct2-cpu | ctranslate2:int8_float32@cpu | 0.3 | 229 | 847 | 2935 | 280 |
-| ct2-cuda | ctranslate2:int8_float32@cuda | 0.7 | 222 | 586 | 677 | 485 |
-| torch-cpu | torch:float32@cpu | 9.0 | 2259 | 6436 | 21310 | 891 |
-| torch-cuda | torch:bfloat16@cuda | 1.3 | 1058 | 2108 | 2377 | 850 |
+| ct2-cpu | ctranslate2:int8_float32@cpu | 0.4 | 262 | 668 | 2142 | 279 |
+| ct2-cuda | ctranslate2:int8_float32@cuda | 0.6 | 210 | 538 | 630 | 485 |
+| torch-cpu | torch:float32@cpu | 6.0 | 1477 | 4093 | 17311 | 1677 |
+| torch-cuda | torch:bfloat16@cuda | 1.1 | 747 | 1962 | 2259 | 893 |
 
-A repeat of the CT2 rows gave ct2-cpu 322 / 938 / 2494 ms and ct2-cuda 224 / 572 / 762 ms
-(p50 / p95 / paragraph). Single short sentences are bound by step-by-step beam decoding, so the GPU
-mainly helps longer inputs (paragraph 3-4x faster).
+## Grammar correction: as the service runs it
 
-### Speech-to-text (recorded.wav, 5 s)
+Default service settings: confidence filter 2.5 and ERRANT error types. `rss_delta_mb` includes
+spaCy and ERRANT. In the CUDA row it is not isolated, because the CPU row ran first in the same
+process and had already loaded them.
+
+`python scripts/benchmark.py --service-config --backends ct2-cpu ct2-cuda`
+
+| runtime | backend | load_s | p50_ms | p95_ms | paragraph_8_sent_ms | rss_delta_mb |
+|---|---|---|---|---|---|---|
+| ct2-cpu | ctranslate2:int8_float32@cpu | 2.7 | 371 | 1194 | 3397 | 886 |
+| ct2-cuda | ctranslate2:int8_float32@cuda | 0.9 | 230 | 586 | 897 | 337 |
+
+## Speech-to-text
+
+`python scripts/benchmark.py --backends --whisper base.en small.en --whisper-devices cpu cuda --audio ../recorded.wav`
 
 | model | runtime | audio_s | median_s | real_time_factor |
 |---|---|---|---|---|
-| base.en | int8@cpu | 5.0 | 1.07 | 0.213 |
-| small.en | int8@cpu | 5.0 | 3.23 | 0.645 |
-| base.en | float16@cuda | 5.0 | 0.22 | 0.044 |
-| small.en | float16@cuda | 5.0 | 0.18 | 0.035 |
+| base.en | int8@cpu | 5.0 | 0.43 | 0.085 |
+| small.en | int8@cpu | 5.0 | 2.58 | 0.516 |
+| base.en | float16@cuda | 5.0 | 0.07 | 0.015 |
+| small.en | float16@cuda | 5.0 | 0.16 | 0.031 |
 
-Repeat: base.en 1.01 s (CPU) vs 0.13 s (GPU), small.en 3.69 s vs 0.18 s.
+Models were benchmarked in two separate runs because this laptop ran out of commit memory when one
+process loaded all of them (drive C: was full, so the page file could not grow).
 
-## Run 2026-10-07: CPU, idle laptop (t5-gec, original model; same architecture as v2)
+## CTranslate2 compute types on GPU
 
-### Grammar correction (50 JFLEG sentences, beam 5)
+150 JFLEG sentences, one at a time, beam 5, two rounds in opposite orders.
 
-| runtime | backend | load_s | p50_ms | p95_ms | paragraph_8_sent_ms | rss_delta_mb |
-|---|---|---|---|---|---|---|
-| ct2-cpu | ctranslate2:int8_float32@cpu | 0.4 | 156 | 393 | 1065 | 279 |
-| torch-cpu | torch:float32@cpu | 4.8 | 603 | 1776 | 7687 | 1903 |
-| torch-cuda | torch:bfloat16@cuda | 0.7 | 363 | 956 | 1165 | 1079 |
+| compute type | median ms (round 1 / 2) | total s (round 1 / 2) |
+|---|---|---|
+| int8_float32 | 191 / 204 | 32.4 / 34.8 |
+| float32 | 142 / 146 | 24.4 / 25.1 |
+| int8_bfloat16 | 193 / 191 | 33.4 / 33.4 |
 
-### Speech-to-text (CPU int8, recorded.wav)
+## Beam search vs greedy on CPU
 
-| model | audio_s | median_s | real_time_factor |
-|---|---|---|---|
-| base.en | 5.0 | 0.45 | 0.090 |
-| small.en | 5.0 | 1.37 | 0.274 |
+The same 150 sentences, two rounds in opposite orders: beam 5 takes 1.78x as long as greedy.

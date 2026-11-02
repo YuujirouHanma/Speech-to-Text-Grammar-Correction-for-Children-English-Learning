@@ -21,7 +21,7 @@ from typing import Any
 
 import numpy as np
 
-from speakfix.domain.errors import InferenceError, ResourceExhaustedError
+from speakfix.domain.errors import InferenceError, ResourceExhaustedError, is_out_of_memory
 from speakfix.domain.models import Transcript, TranscriptSegment
 from speakfix.domain.ports import FloatArray
 
@@ -131,8 +131,8 @@ class WhisperSpeechToText:
                 )
                 for s in segments_iter  # the generator runs the actual decoding
             )
-        except RuntimeError as exc:
-            if "out of memory" in str(exc).lower():
+        except Exception as exc:  # onnxruntime (the VAD) has its own exception types
+            if is_out_of_memory(exc):
                 raise ResourceExhaustedError("Out of memory during transcription.") from exc
             raise InferenceError("Transcription failed.") from exc
         text = " ".join(seg.text for seg in segments if seg.text).strip()

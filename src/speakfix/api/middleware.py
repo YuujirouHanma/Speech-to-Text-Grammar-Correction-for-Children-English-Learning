@@ -7,6 +7,7 @@ import re
 import time
 import uuid
 
+import anyio
 import structlog
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -24,6 +25,9 @@ _UI_CSP = (
     "media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; "
     "base-uri 'none'; form-action 'self'"
 )
+# An oversized body is read and dropped before answering, within these bounds.
+_DRAIN_MAX_FACTOR = 5
+_DRAIN_TIMEOUT_SECONDS = 30.0
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -101,6 +105,7 @@ class BodySizeLimitMiddleware:
             return
         declared = Headers(scope=scope).get("content-length")
         if declared and declared.isdigit() and int(declared) > self.max_bytes:
+            await self._drain(receive, int(declared))
             await self._reject(scope, send)
             return
         received = 0
@@ -115,6 +120,21 @@ class BodySizeLimitMiddleware:
             return message
 
         await self.app(scope, limited_receive, send)
+
+    async def _drain(self, receive: Receive, declared: int) -> None:
+        """Read and drop an oversized body, so that the client gets to read the 413.
+
+        Answering while a client is still sending makes the OS reset the connection, and
+        the client sees a network error instead of the status. Nothing is buffered. A body
+        far over the limit, or one sent too slowly, is not waited for.
+        """
+        if declared > self.max_bytes * _DRAIN_MAX_FACTOR:
+            return
+        with anyio.move_on_after(_DRAIN_TIMEOUT_SECONDS):
+            while True:
+                message = await receive()
+                if message["type"] != "http.request" or not message.get("more_body", False):
+                    return
 
     async def _reject(self, scope: Scope, send: Send) -> None:
         request_id = scope.get("state", {}).get("request_id")

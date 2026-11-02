@@ -38,6 +38,7 @@ from speakfix.config import InputStyle
 from speakfix.domain.ports import Seq2SeqBackend
 from speakfix.services.corrector import CorrectionConfig, GrammarCorrector
 from speakfix.text.normalize import detokenize, normalize_text
+from train_t5 import clean, key
 
 
 def load_jfleg(path: Path, limit: int | None) -> tuple[list[str], list[list[str]]]:
@@ -55,10 +56,14 @@ def load_kaggle(
     df = pd.read_csv(path)
     if "Ungrammatical Statement" in df.columns:
         df = df.rename(columns={"Ungrammatical Statement": "input", "Standard English": "target"})
-    if split_file and split_file.exists():
-        keep = set(json.loads(split_file.read_text())["test_sources"])
-        df = df[df["input"].isin(keep)]
     df = df.dropna(subset=["input", "target"]).drop_duplicates(subset=["input"])
+    if split_file and split_file.exists():
+        # split.json holds sources as cleaned for training, so compare them the same way.
+        test_sources = json.loads(split_file.read_text(encoding="utf-8"))["test_sources"]
+        keep = {key(s) for s in test_sources}
+        df = df[df["input"].map(lambda s: key(clean(s)) in keep)]
+        if len(df) != len(test_sources):
+            raise SystemExit(f"{split_file}: found {len(df)} of {len(test_sources)} test sentences")
     sources = [normalize_text(s) for s in df["input"]]
     refs = [[normalize_text(t)] for t in df["target"]]
     return (sources[:limit], refs[:limit]) if limit else (sources, refs)
@@ -231,14 +236,14 @@ def main() -> None:
             print(f"{args.label:10} {ds_name:11} {sys_name:15} {metrics}")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    existing = json.loads(args.out.read_text()) if args.out.exists() else {}
+    existing = json.loads(args.out.read_text(encoding="utf-8")) if args.out.exists() else {}
     existing[args.label] = {
         "model": str(args.model),
         "backend": backend.name,
         "results": results,
         "examples": examples,
     }
-    args.out.write_text(json.dumps(existing, indent=2, ensure_ascii=False))
+    args.out.write_text(json.dumps(existing, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"saved -> {args.out}")
 
 

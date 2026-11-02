@@ -200,6 +200,15 @@ def test_confidence_margin_scores_only_changed_sentences() -> None:
     assert len(backend.score_calls) == 1
 
 
+def test_a_missing_final_period_is_not_an_uncertain_correction() -> None:
+    backend = ScoringBackend(SCORES)
+    config = CorrectionConfig(min_correction_margin=2.0)
+    result = GrammarCorrector(backend, config=config).correct("All is fine here")
+    assert result.corrected == "All is fine here."
+    assert result.warnings == ()
+    assert backend.score_calls == []
+
+
 def test_confidence_margin_keeps_corrections_when_scoring_fails() -> None:
     backend = ScoringBackend(SCORES, scoring_fails=True)
     config = CorrectionConfig(min_correction_margin=2.0)

@@ -11,14 +11,20 @@ from __future__ import annotations
 import argparse
 import statistics
 import time
+from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
 import psutil
 
-from speakfix.config import Device
+from speakfix.config import Device, Settings
 from speakfix.domain.ports import Seq2SeqBackend
-from speakfix.inference.devices import resolve_device, resolve_t5_compute_type
+from speakfix.inference.devices import (
+    resolve_device,
+    resolve_t5_compute_type,
+    resolve_whisper_compute_type,
+)
+from speakfix.inference.factory import build_edit_classifier
 from speakfix.services.corrector import CorrectionConfig, GrammarCorrector
 from speakfix.text.normalize import detokenize
 
@@ -42,15 +48,22 @@ def percentile(values: list[float], q: float) -> float:
 
 
 def bench_corrector(
-    spec: str, sentences: list[str], models_dir: Path, t5_name: str
+    spec: str, sentences: list[str], models_dir: Path, t5_name: str, service: bool
 ) -> dict[str, str]:
     process = psutil.Process()
     rss_before = process.memory_info().rss
     start = time.perf_counter()
     backend = load_backend(spec, models_dir, t5_name)
+    config = CorrectionConfig(max_chars=10_000)
+    classifier = None
+    if service:  # what the service runs by default: confidence filter + ERRANT error types
+        settings = Settings(_env_file=None)  # type: ignore[call-arg]
+        config = replace(config, min_correction_margin=settings.min_correction_margin)
+        classifier = build_edit_classifier(settings)
     load_s = time.perf_counter() - start
-    corrector = GrammarCorrector(backend, config=CorrectionConfig(max_chars=10_000))
+    corrector = GrammarCorrector(backend, config=config, classifier=classifier)
     corrector.warmup()
+    corrector.correct("Warm up the error typing too.")
     latencies = []
     for sentence in sentences:
         t = time.perf_counter()
@@ -79,7 +92,7 @@ def bench_whisper(name: str, audio_path: Path, models_dir: Path, device: str) ->
     from speakfix.inference.whisper_stt import WhisperSpeechToText
 
     device = resolve_device(Device(device))
-    compute_type = "float16" if device == "cuda" else "int8"
+    compute_type = resolve_whisper_compute_type("auto", device)
     model = resolve_whisper_model(name, models_dir / "whisper")
     stt = WhisperSpeechToText(model, device=device, compute_type=compute_type)
     audio, _ = preprocess(decode_audio(audio_path.read_bytes()), TARGET_SAMPLE_RATE)
@@ -114,6 +127,11 @@ def main() -> None:
     )
     parser.add_argument("--backends", nargs="*", default=["ct2-cpu", "torch-cpu"])
     parser.add_argument("--t5-name", default="t5-gec-v2", help="model folder under --models-dir")
+    parser.add_argument(
+        "--service-config",
+        action="store_true",
+        help="measure the service defaults: confidence filter + ERRANT error types",
+    )
     parser.add_argument("--whisper", nargs="*", default=[])
     parser.add_argument("--whisper-devices", nargs="+", choices=["cpu", "cuda"], default=["cpu"])
     parser.add_argument("--audio", type=Path)
@@ -129,10 +147,15 @@ def main() -> None:
 
     sections = []
     rows = [
-        bench_corrector(spec, sentences, args.models_dir, args.t5_name) for spec in args.backends
+        bench_corrector(spec, sentences, args.models_dir, args.t5_name, args.service_config)
+        for spec in args.backends
     ]
     if rows:
-        title = f"## Grammar correction ({args.t5_name}, {len(sentences)} JFLEG sentences, beam 5)"
+        mode = "service defaults" if args.service_config else "generation only"
+        title = (
+            f"## Grammar correction ({args.t5_name}, {mode}, "
+            f"{len(sentences)} JFLEG sentences, beam 5)"
+        )
         sections.append(f"{title}\n\n{to_markdown(rows)}")
     if args.whisper and args.audio:
         wrows = [

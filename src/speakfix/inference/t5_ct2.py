@@ -1,4 +1,4 @@
-"""T5 inference on CTranslate2 (int8 on CPU, int8/bf16 on GPU).
+"""T5 inference on CTranslate2 (int8 weights on CPU and GPU).
 
 CTranslate2 is an optimized C++ runtime for Transformer models. Compared with
 PyTorch it gives several times lower latency on CPU with int8 weights, uses far
@@ -12,15 +12,11 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from speakfix.domain.errors import InferenceError, ResourceExhaustedError
+from speakfix.domain.errors import InferenceError, ResourceExhaustedError, is_out_of_memory
 
 
-def _is_oom(exc: BaseException) -> bool:
-    return "out of memory" in str(exc).lower()
-
-
-def _inference_error(exc: RuntimeError) -> InferenceError:
-    if _is_oom(exc):
+def _inference_error(exc: Exception) -> InferenceError:
+    if is_out_of_memory(exc):
         return ResourceExhaustedError("Out of memory during T5 inference.")
     return InferenceError("T5 inference failed.")
 
@@ -90,7 +86,7 @@ class Ct2Seq2SeqBackend:
                 max_decoding_length=max_new_tokens,
                 return_scores=False,
             )
-        except RuntimeError as exc:
+        except (RuntimeError, MemoryError) as exc:
             raise _inference_error(exc) from exc
         outputs: list[str] = []
         for result in results:
@@ -109,6 +105,6 @@ class Ct2Seq2SeqBackend:
         ]
         try:
             results = self._translator.score_batch(source_tokens, target_tokens)
-        except RuntimeError as exc:
+        except (RuntimeError, MemoryError) as exc:
             raise _inference_error(exc) from exc
         return [float(sum(result.log_probs)) for result in results]

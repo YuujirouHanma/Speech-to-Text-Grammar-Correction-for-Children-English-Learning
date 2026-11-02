@@ -226,7 +226,12 @@ class GrammarCorrector:
     ) -> list[str]:
         """Undo sentence corrections the model does not clearly prefer over the input."""
         threshold = self._config.min_correction_margin
-        changed = [i for i, unit in enumerate(units) if parts[i] != unit.source]
+        # A missing final period needs no score: both scored texts would be the same sentence.
+        changed = [
+            i
+            for i, unit in enumerate(units)
+            if parts[i] != unit.source and parts[i] != ensure_terminal_punctuation(unit.source)
+        ]
         if not changed or threshold == -math.inf or not isinstance(backend, Seq2SeqScorer):
             return parts
         prompts = [units[i].model_input for i in changed]

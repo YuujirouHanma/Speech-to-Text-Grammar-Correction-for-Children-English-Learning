@@ -123,7 +123,9 @@ class Settings(BaseSettings):
     # ---------------------------------------------------------------------- stt
     stt_engine: SttEngine = SttEngine.WHISPER
     stt_fallback_engine: SttEngine | None = SttEngine.WHISPER
-    whisper_model: str = "base.en"
+    # "auto": small.en on GPU (best and stable in the STT evaluation, see README), base.en on CPU
+    # (3-6x faster, accuracy overlaps). Or a size such as "base.en", or a local model path.
+    whisper_model: str = "auto"
     whisper_compute_type: str = "auto"
     whisper_beam_size: int = Field(default=5, ge=1, le=10)
     whisper_language: str | None = "en"

@@ -25,7 +25,7 @@ from pathlib import Path
 from speakfix.audio.decode import TARGET_SAMPLE_RATE, decode_audio
 from speakfix.audio.preprocess import preprocess
 from speakfix.config import Device
-from speakfix.inference.devices import resolve_device
+from speakfix.inference.devices import resolve_device, resolve_whisper_compute_type
 from speakfix.inference.whisper_stt import WhisperSpeechToText
 
 AUDIO_EXT = {".mp3", ".wav", ".m4a", ".ogg", ".webm", ".flac"}
@@ -69,12 +69,19 @@ def load_samples(audio_dir: Path | None, manifest: Path | None, extra: list[str]
     return samples
 
 
-def run(samples: list[Sample], model: str, prompt: bool, device: str, models_dir: Path) -> dict:
+def run(
+    samples: list[Sample],
+    model: str,
+    prompt: bool,
+    device: str,
+    compute_type: str,
+    models_dir: Path,
+) -> dict:
     device = resolve_device(Device(device))  # also exposes pip-installed CUDA libraries
     stt = WhisperSpeechToText(
         model,
         device=device,
-        compute_type="float16" if device == "cuda" else "int8",
+        compute_type=resolve_whisper_compute_type(compute_type, device),
         download_root=models_dir / "whisper",
         verbatim_prompt=prompt,
     )
@@ -111,6 +118,7 @@ def main() -> None:
     parser.add_argument("--extra", nargs="*", default=[], help="path=reference pairs")
     parser.add_argument("--models", nargs="+", default=["base.en", "small.en"])
     parser.add_argument("--device", choices=["cpu", "cuda", "auto"], default="cpu")
+    parser.add_argument("--compute-type", default="auto", help="CTranslate2 compute type")
     parser.add_argument("--models-dir", type=Path, default=Path("models"))
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
@@ -119,13 +127,14 @@ def main() -> None:
     if not samples:
         raise SystemExit("No audio samples found.")
     results = [
-        run(samples, model, prompt, args.device, args.models_dir)
+        run(samples, model, prompt, args.device, args.compute_type, args.models_dir)
         for model in args.models
         for prompt in (False, True)
     ]
 
     lines = [
-        f"# STT evaluation ({len(samples)} recordings, device={args.device})",
+        f"# STT evaluation ({len(samples)} recordings, device={args.device}, "
+        f"compute_type={args.compute_type})",
         "",
         "| Model | Verbatim prompt | WER (lower=better) | Verbatim rate (higher=better) "
         "| Real-time factor |",

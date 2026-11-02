@@ -1,6 +1,7 @@
 "use strict";
 
-const MAX_SECONDS = 60;
+let maxUploadMb = 10; // replaced by the server's limit from /v1/info
+let maxAudioSeconds = 60; // likewise
 const $ = (id) => document.getElementById(id);
 let recorder = null;
 let chunks = [];
@@ -19,6 +20,13 @@ const NOTES = {
   uncertain_correction_skipped: "Sebagian saran tidak ditampilkan karena sistem belum cukup yakin.",
 };
 
+/** "No mistakes found" would be misleading: the system held a suggestion back or heard too little. */
+const NO_PRAISE = [
+  "uncertain_correction_skipped",
+  "low_confidence_correction_skipped",
+  "little_or_no_speech_detected",
+];
+
 /** Messages for the API error codes; anything else shows the server's message. */
 const ERRORS = {
   consent_required: "Centang persetujuan dulu sebelum mengirim rekaman.",
@@ -26,6 +34,8 @@ const ERRORS = {
   rate_limited: "Terlalu banyak permintaan. Tunggu sebentar, lalu coba lagi.",
   server_busy: "Server sedang sibuk. Coba lagi beberapa detik lagi.",
   queue_full: "Server sedang sibuk. Coba lagi beberapa detik lagi.",
+  resource_exhausted: "Server sedang penuh. Coba lagi beberapa detik lagi.",
+  inference_failed: "Terjadi gangguan saat memproses. Coba lagi.",
   model_not_ready: "Model masih dimuat. Coba lagi sebentar lagi.",
   inference_timeout: "Pemrosesan terlalu lama. Coba rekaman yang lebih pendek.",
   payload_too_large: "File terlalu besar.",
@@ -33,6 +43,13 @@ const ERRORS = {
   invalid_audio: "Audio tidak bisa dibaca. Coba rekam ulang.",
   invalid_audio_duration: "Durasi rekaman terlalu pendek atau terlalu panjang (maksimal 60 detik).",
   invalid_text: "Teks kosong atau terlalu panjang.",
+  network: "Koneksi ke server terputus. Periksa internet, lalu coba lagi.",
+};
+
+const MIC_ERRORS = {
+  NotAllowedError: "Izin mikrofon ditolak. Izinkan mikrofon di pengaturan browser, atau unggah rekaman.",
+  NotFoundError: "Mikrofon tidak ditemukan. Sambungkan mikrofon, atau unggah rekaman.",
+  NotReadableError: "Mikrofon sedang dipakai aplikasi lain. Tutup aplikasi itu, lalu coba lagi.",
 };
 
 function setStatus(message, isError = false) {
@@ -49,7 +66,12 @@ function headers() {
 }
 
 async function callApi(url, options) {
-  const response = await fetch(url, options);
+  let response;
+  try {
+    response = await fetch(url, options);
+  } catch {
+    throw new Error(ERRORS.network);
+  }
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
     const err = body.error || {};
@@ -107,14 +129,20 @@ function renderCorrection(correction, extra = {}) {
     li.textContent = describeEdit(edit);
     list.append(li);
   }
-  $("praise").hidden = correction.changed;
-  showNotes([...(extra.warnings || []), ...(correction.warnings || [])]);
+  const notes = [...(extra.warnings || []), ...(correction.warnings || [])];
+  $("praise").hidden = correction.changed || notes.some((code) => NO_PRAISE.includes(code));
+  showNotes(notes);
   $("timing").textContent = extra.timings ? `Diproses dalam ${extra.timings.total_ms ?? "?"} ms` : "";
+  $("result").scrollIntoView({ behavior: "smooth", block: "nearest" }); // far below on a phone
 }
 
 async function analyzeAudio(blob, filename) {
   if (!$("consent").checked) {
     setStatus(ERRORS.consent_required, true);
+    return;
+  }
+  if (blob.size > maxUploadMb * 1024 * 1024) {
+    setStatus(`File terlalu besar (maksimal ${maxUploadMb} MB).`, true);
     return;
   }
   const form = new FormData();
@@ -133,7 +161,9 @@ async function analyzeAudio(blob, filename) {
       $("correctedLabel").hidden = true;
       $("edits").replaceChildren();
       $("praise").hidden = true;
+      $("timing").textContent = "";
       showNotes(body.warnings);
+      $("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
     setStatus("");
   } catch (err) {
@@ -163,10 +193,19 @@ function pickMimeType() {
   return candidates.find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
 }
 
+function formatTime(seconds) {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+/** A second under the server's limit: a recording runs slightly longer than the timer shows. */
+function recordingLimit() {
+  return Math.max(1, Math.floor(maxAudioSeconds) - 1);
+}
+
 function updateTimer() {
   const seconds = Math.floor((Date.now() - startedAt) / 1000);
-  $("timer").textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")} / 0:60`;
-  if (seconds >= MAX_SECONDS) stopRecording();
+  $("timer").textContent = `${formatTime(seconds)} / ${formatTime(recordingLimit())}`;
+  if (seconds >= recordingLimit()) stopRecording();
 }
 
 async function startRecording() {
@@ -174,12 +213,16 @@ async function startRecording() {
     setStatus(ERRORS.consent_required, true);
     return;
   }
-  if (!window.isSecureContext || !navigator.mediaDevices) {
+  if (!window.isSecureContext) {
     setStatus(
       "Browser hanya mengizinkan mikrofon lewat alamat https:// atau localhost. " +
         "Buka lewat link https, atau unggah rekaman.",
       true
     );
+    return;
+  }
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    setStatus("Browser ini belum mendukung perekaman. Silakan unggah file rekaman.", true);
     return;
   }
   try {
@@ -191,6 +234,9 @@ async function startRecording() {
     chunks = [];
     recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
     recorder.onstop = () => {
+      // Also runs when the browser ends the recording itself, e.g. a phone locking its screen.
+      clearInterval(timerId);
+      $("recordBtn").textContent = "Mulai rekam";
       stream.getTracks().forEach((t) => t.stop());
       const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
       const player = $("playback");
@@ -205,20 +251,24 @@ async function startRecording() {
     $("recordBtn").textContent = "Berhenti";
     setStatus("Merekam… bicaralah dengan jelas.");
   } catch (err) {
-    setStatus(`Mikrofon tidak bisa dipakai: ${err.message}`, true);
+    setStatus(MIC_ERRORS[err.name] || `Mikrofon tidak bisa dipakai: ${err.message}`, true);
   }
 }
 
 function stopRecording() {
-  clearInterval(timerId);
   if (recorder && recorder.state !== "inactive") recorder.stop();
-  $("recordBtn").textContent = "Mulai rekam";
 }
 
 /** Demo mode (public demo): adult voices only, adapted consent text. */
 async function applyServerSettings() {
   try {
     const info = await callApi("/v1/info", {});
+    maxUploadMb = info.limits?.max_upload_mb ?? maxUploadMb;
+    maxAudioSeconds = info.limits?.max_audio_seconds ?? maxAudioSeconds;
+    ERRORS.invalid_audio_duration =
+      `Durasi rekaman terlalu pendek atau terlalu panjang (maksimal ${maxAudioSeconds} detik).`;
+    $("timer").textContent = `0:00 / ${formatTime(recordingLimit())}`;
+    $("apiKeyBox").hidden = !info.ui?.api_key_required;
     if (info.ui && info.ui.demo_mode) {
       $("demoBanner").hidden = false;
       $("consentText").textContent =

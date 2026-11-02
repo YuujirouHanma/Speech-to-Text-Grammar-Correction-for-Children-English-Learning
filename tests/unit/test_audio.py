@@ -1,6 +1,10 @@
 import contextlib
+import gc
+import subprocess
+import sys
 
 import numpy as np
+import psutil
 import pytest
 
 from speakfix.audio.decode import check_duration, decode_audio, probe_duration
@@ -160,3 +164,27 @@ def test_analysis_service_prepare_audio_limits() -> None:
     prepared = service.prepare_audio(make_wav(0.8))
     assert prepared.source_format == "wav"
     assert prepared.sample_rate == SR
+
+
+def test_decoding_starts_no_threads() -> None:
+    # av.AudioResampler started one thread per CPU core for every file, hundreds under load.
+    process = psutil.Process()
+    data = make_wav(0.5)
+    gc.collect()
+    before = process.num_threads()
+    for _ in range(5):
+        decode_audio(data)
+    assert process.num_threads() <= before
+
+
+def test_importing_speakfix_limits_numpy_threads() -> None:
+    # OpenBLAS would start a thread per core and commit about 500 MB for them.
+    code = (
+        "import os; os.environ.pop('OPENBLAS_NUM_THREADS', None); import speakfix, numpy, psutil;"
+        "print(os.environ['OPENBLAS_NUM_THREADS'], psutil.Process().num_threads())"
+    )
+    limit, threads = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True
+    ).stdout.split()
+    assert limit == "1"
+    assert int(threads) <= 6

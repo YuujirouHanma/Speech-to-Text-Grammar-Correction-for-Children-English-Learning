@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SpeakFix — Latihan bicara bahasa Inggris</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/app.js" defer></script>
 </head>
@@ -25,7 +26,7 @@
         <span id="consentText">Saya orang tua/wali, atau guru yang sudah mendapat izin dari orang tua,
           dan setuju rekaman ini diproses. Audio hanya diproses di memori dan tidak pernah disimpan.</span>
       </label>
-      <details>
+      <details id="apiKeyBox" hidden>
         <summary>API key (hanya jika server memintanya)</summary>
         <input id="apiKey" type="password" autocomplete="off" placeholder="X-API-Key">
       </details>
@@ -35,7 +36,7 @@
       <h2>Bicara</h2>
       <div class="row">
         <button id="recordBtn" class="primary" type="button">Mulai rekam</button>
-        <span id="timer" class="muted">0:00 / 0:60</span>
+        <span id="timer" class="muted">0:00 / 0:59</span>
       </div>
       <div class="row">
         <label class="file">Atau unggah rekaman

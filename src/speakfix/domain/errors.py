@@ -115,3 +115,13 @@ class CloudSttDisabledError(SpeakFixError):
     """Cloud speech-to-text is disabled by the privacy policy of this deployment."""
 
     code = "cloud_stt_disabled"
+
+
+# How CTranslate2, MKL and onnxruntime word it; "bad allocation" is std::bad_alloc on Windows.
+_OUT_OF_MEMORY_MESSAGES = ("out of memory", "failed to allocate", "bad allocation", "bad_alloc")
+
+
+def is_out_of_memory(exc: BaseException) -> bool:
+    """True if an inference library reports that memory ran out."""
+    message = str(exc).lower()
+    return isinstance(exc, MemoryError) or any(m in message for m in _OUT_OF_MEMORY_MESSAGES)

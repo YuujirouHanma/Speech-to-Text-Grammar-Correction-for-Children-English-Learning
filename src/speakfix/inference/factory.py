@@ -137,6 +137,19 @@ def resolve_whisper_model(name: str, root: Path) -> str:
     return str(snapshots[-1]) if snapshots else name
 
 
+def choose_whisper_model(requested: str, device: str, root: Path) -> str:
+    """Resolve ``auto``: ``small.en`` on a GPU, ``base.en`` on a CPU, where it is faster (README).
+
+    A GPU without a prepared ``small.en`` keeps ``base.en``, so that a server without
+    internet access still starts.
+    """
+    if requested != "auto":
+        return requested
+    if device == "cuda" and resolve_whisper_model("small.en", root) != "small.en":
+        return "small.en"
+    return "base.en"
+
+
 def build_stt_engine(engine: SttEngine, settings: Settings) -> SpeechToText:
     """Instantiate one speech-to-text engine (cloud engines need explicit opt-in)."""
     if engine is SttEngine.WHISPER:
@@ -144,11 +157,13 @@ def build_stt_engine(engine: SttEngine, settings: Settings) -> SpeechToText:
 
         def load_whisper(target: str) -> SpeechToText:
             compute_type = resolve_whisper_compute_type(settings.whisper_compute_type, target)
+            root = settings.whisper_download_root
+            size = choose_whisper_model(settings.whisper_model, target, root)
             loaded: WhisperSpeechToText = WhisperSpeechToText(
-                resolve_whisper_model(settings.whisper_model, settings.whisper_download_root),
+                resolve_whisper_model(size, root),
                 device=target,
                 compute_type=compute_type,
-                download_root=settings.whisper_download_root,
+                download_root=root,
                 beam_size=settings.whisper_beam_size,
                 language=settings.whisper_language,
                 vad=settings.whisper_vad,
@@ -157,9 +172,7 @@ def build_stt_engine(engine: SttEngine, settings: Settings) -> SpeechToText:
             )
             if target == "cuda":  # loading succeeds even when cuBLAS is missing
                 loaded.probe()
-            MODEL_INFO.labels(
-                "stt", settings.whisper_model, "faster-whisper", target, compute_type
-            ).set(1)
+            MODEL_INFO.labels("stt", size, "faster-whisper", target, compute_type).set(1)
             return loaded
 
         device = resolve_device(settings.device)
