@@ -45,6 +45,7 @@ async def transcribe(
     """Speech-to-text only (no grammar correction)."""
     require_consent(consent, container)
     data = await read_upload(file, container.settings.max_upload_bytes)
+    await container.ensure_models()
     if not container.transcriber_ready:
         raise ModelNotReadyError("The speech model is still loading.")
     transcript, prepared, timings = await container.run_inference(
@@ -76,6 +77,7 @@ async def analyze(
     """Full pipeline in one synchronous call (clips up to the configured limit)."""
     require_consent(consent, container)
     data = await read_upload(file, container.settings.max_upload_bytes)
+    await container.ensure_models()
     if not container.ready:
         raise ModelNotReadyError("Models are still loading.")
     analysis = await container.run_inference(

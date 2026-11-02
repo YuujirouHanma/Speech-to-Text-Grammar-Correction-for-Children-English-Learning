@@ -32,6 +32,7 @@ async def correct_text(
 ) -> CorrectTextResponse:
     """Correct one or more English sentences and list every edit."""
     start = time.perf_counter()
+    await container.ensure_models()
     correction = await container.run_inference(
         lambda: container.analysis.correct_text(body.text, num_beams=body.num_beams)
     )

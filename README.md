@@ -126,8 +126,9 @@ speakfix/
 │                     benchmark, load_test, check_api, check_browser, run_public_demo, backup_models,
 │                     freeze_constraints
 ├── constraints.txt   versi dependensi yang sudah teruji (dipakai Docker, CI, dan setup lokal)
-├── tests/            unit/ dan integration/ (173 test)
-├── docker/           Dockerfile (CPU), Dockerfile.gpu (CUDA 12.8)
+├── tests/            unit/ dan integration/ (185 test)
+├── docker/           Dockerfile (CPU), Dockerfile.gpu (CUDA 12.8), model-card.md
+├── Dockerfile.vercel image untuk Vercel, model ikut di dalamnya (+ vercel.json)
 ├── monitoring/       prometheus.yml, alerts.yml, dashboard Grafana
 ├── reports/          hasil evaluasi, benchmark, uji beban, uji rekaman, dan pemeriksaan sebelum testing
 └── models/           artefak model (tidak di-commit)
@@ -189,6 +190,7 @@ Kalau model v2 belum dibuat, pakai model asli: `$env:SPEAKFIX_T5_MODEL_NAME = "t
 | POST | `/v1/jobs/analyze` | Sama seperti analyze, asinkron → `202` + `Location` |
 | GET / DELETE | `/v1/jobs/{job_id}` | Ambil status/hasil · hapus segera |
 | GET | `/v1/info` | Model aktif, batas, pengaturan privasi |
+| POST | `/v1/warmup` | Memuat model sekarang, untuk host serverless (lihat Vercel) |
 | GET | `/healthz`, `/readyz`, `/metrics` | Liveness, readiness, Prometheus |
 
 Contoh:
@@ -280,6 +282,7 @@ Semua pengaturan dibaca dari environment variable berprefix `SPEAKFIX_` atau dar
 | `SPEAKFIX_PUNCTUATION_FEEDBACK` | `true` | Umpan balik tanda baca dan huruf kapital untuk teks ketikan. Transkrip suara tidak pernah mendapatkannya. |
 | `SPEAKFIX_FEEDBACK_LANGUAGE` | `id` | Bahasa deskripsi kesalahan di API (`id` atau `en`). |
 | `SPEAKFIX_DEMO_MODE` | `false` | Demo publik: UI meminta suara orang dewasa saja. |
+| `SPEAKFIX_LOAD_MODELS_ON_DEMAND` | `false` | Memuat model saat dibutuhkan, untuk host serverless (lihat Vercel). |
 
 ---
 
@@ -613,7 +616,55 @@ yang dipakai browser-browser itu (webm/Opus, MP4 terfragmentasi/AAC), tetapi mik
 
 Batasan: link berganti setiap kali skrip dijalankan, laptop harus tetap menyala, dan *quick tunnel* tidak
 punya jaminan uptime. `/docs` dan `/metrics` (statistik teknis tanpa data pribadi) ikut terbuka. Untuk
-layanan permanen, gunakan Docker di server (di bawah).
+layanan permanen, gunakan Vercel atau Docker di server (di bawah).
+
+### Vercel (link permanen gratis, untuk portofolio)
+
+Untuk pengunjung sedikit dan tanpa server sendiri: laptop boleh mati, dan linknya tetap. `Dockerfile.vercel` membuat
+image berisi model v2 dan Whisper `base.en`, dan `vercel.json` memakai runtime container Vercel (masih beta).
+
+1. Unggah model ke Hugging Face. Repo-nya harus publik, karena Vercel mengunduhnya tanpa token saat build:
+
+   ```powershell
+   .\.venv\Scripts\hf.exe auth login
+   .\.venv\Scripts\hf.exe upload <user>/speakfix-t5-gec-v2-ct2 models\t5-gec-v2-ct2 .
+   .\.venv\Scripts\hf.exe upload <user>/speakfix-t5-gec-v2-ct2 docker\model-card.md README.md
+   ```
+
+   Lisensinya CC BY-NC-SA 4.0, mengikuti lisensi JFLEG (lihat `docker/model-card.md`). Jika nama repo berbeda, ubah
+   `T5_MODEL_REPO` di `Dockerfile.vercel`.
+2. Di Vercel, pilih **Add New > Project**, lalu impor repo GitHub ini.
+3. Tambahkan environment variable `PORT` dengan nilai `8000`, lalu klik **Deploy**.
+
+Bedanya dengan server biasa:
+
+- **Model dimuat saat dibutuhkan** (`SPEAKFIX_LOAD_MODELS_ON_DEMAND=true`). Vercel menjeda server setelah request
+  selesai, jadi pemuatan di background bisa terhenti. Request yang sedang menunggu membuat server tetap berjalan.
+- **Halaman mulai memuat model sejak dibuka.** Halaman langsung memanggil `POST /v1/warmup`, jadi waktu tunggunya
+  terpakai selagi pengunjung membaca atau merekam. Kalau satu permintaan lebih dari 8 detik, halaman menjelaskan
+  alasannya.
+- **Batas input lebih kecil.** Vercel menolak request di atas 4,5 MB, jadi image memakai batas upload 4 MB. Rate limit-nya
+  30 per menit per IP, karena kuota CPU dipakai bersama semua pengunjung.
+- **Job async (`/v1/jobs`) tidak bisa diandalkan** karena server dijeda di antara request. UI tidak memakainya.
+
+Batas paket gratis Vercel (dicek 2 November 2026): 1 vCPU, 2 GB, dan 4 jam CPU per bulan. Kalau kuota habis, layanan
+bisa berhenti sampai 30 hari. Server dimatikan setelah 5 menit tanpa request.
+
+Uji lokal 2 November 2026 dengan model asli dan pengaturan image ini, dibatasi ke satu CPU logis laptop (i7-13620H):
+
+| Yang diukur | Hasil |
+|---|---|
+| Server menjawab setelah dinyalakan | 1,1 detik |
+| Memuat model (`/v1/warmup`) | 7,8 detik, 3,3 detik CPU |
+| Kalimat diketik | p50 0,16 detik, 0,14 detik CPU |
+| Rekaman 5 detik | p50 1,24 detik, 1,10 detik CPU |
+| 5 pengguna, jeda 15 detik | 13 dari 13 berhasil, p95 2,34 detik |
+| 10 pengguna, jeda 15 detik | p95 3,26 detik; 1 dari 27 gagal saat pengaman memori alat uji mematikan server |
+| Memori setelah model dimuat (RSS) | Sekitar 1 GB |
+
+Dengan angka ini, 4 jam CPU setara sekitar 13.000 rekaman 5 detik per bulan. Hasil di Vercel kemungkinan lebih lambat:
+vCPU-nya bisa lebih lemah dari inti laptop, dan waktu menyalakan container belum termasuk. `Dockerfile.vercel` belum
+pernah di-build, dan aplikasi belum pernah dijalankan di Vercel.
 
 ### Docker (server permanen)
 
@@ -645,9 +696,9 @@ Isi image dan container:
   yang macet menahan slot inferensi selamanya. Di Kubernetes, pasang `livenessProbe` ke `/healthz`.
   Docker biasa tidak me-restart container *unhealthy*, jadi gunakan orkestrator atau `autoheal`.
 
-> Dockerfile belum di-build di laptop pengembang karena Docker tidak terpasang. Job `docker` di CI akan
-> mem-build image CPU pada setiap push, tetapi baru berjalan setelah repo di-push ke GitHub. Isi image CPU sudah
-> diuji di venv bersih tanpa PyTorch dan tanpa editable install (`reports/e2e_recordings.md`, `reports/load_test.md`).
+> Job `docker` di CI berhasil mem-build image CPU (2 November 2026), tetapi image-nya belum pernah dijalankan karena
+> Docker tidak terpasang di laptop pengembang. Isi image CPU sudah diuji di venv bersih tanpa PyTorch dan tanpa editable
+> install (`reports/e2e_recordings.md`, `reports/load_test.md`). Image GPU belum pernah di-build.
 
 Checklist produksi:
 
@@ -731,9 +782,9 @@ Log ditulis sebagai JSON per baris (structlog) dengan `request_id`. Nilai field 
 ## Kualitas kode & testing
 
 ```powershell
-pytest -m "not slow"          # 166 test cepat, tanpa model (dipakai CI)
+pytest -m "not slow"          # 178 test cepat, tanpa model (dipakai CI)
 pytest                        # + 7 test dengan model asli / ERRANT (dilewati jika belum terpasang)
-pytest --cov=speakfix         # coverage 90% (84% di CI, tanpa model)
+pytest --cov=speakfix         # coverage 91% (84% di CI, tanpa model)
 ruff check src tests scripts ; ruff format --check src tests scripts
 mypy src                      # mode strict, 0 error
 ```
@@ -883,9 +934,9 @@ keduanya berdekatan. Perbandingan yang lebih kuat ada di data uji held-out (bagi
   *"Akan nasi goreng and I like apples."*. Kalimat bahasa Indonesia penuh biasanya dibiarkan apa adanya, tetapi hasilnya tidak dijamin.
 - **Whisper hanya bahasa Inggris** (`base.en`/`small.en`), dan kadang menormalkan kesalahan atau salah dengar
   (lihat [Evaluasi speech-to-text](#evaluasi-speech-to-text)).
-- **Docker belum di-build.** Docker tidak terpasang di laptop pengembang. Isi image CPU sudah diuji di venv bersih di
-  Windows (paket dan pengaturan yang sama), dan semua versi terkunci sudah dicek tersedia sebagai wheel Linux, tetapi
-  `docker build` pertama baru berjalan di CI setelah repo di-push.
+- **Image Docker belum pernah dijalankan.** CI berhasil mem-build image CPU, tetapi Docker tidak terpasang di laptop
+  pengembang. Isi image CPU sudah diuji di venv bersih di Windows (paket dan pengaturan yang sama). Image GPU dan
+  `Dockerfile.vercel` belum pernah di-build.
 - **Perekaman dari HP sungguhan belum diuji** (lihat bagian Demo publik).
 - Tipe kesalahan (ERRANT) sudah diuji di laptop pengembang (errant 3.0.2, spaCy 3.8). Pengujian ini
   menemukan bug: teks dulu dipecah per spasi saja, sehingga *don't → doesn't* diberi label `R:OTHER` dan

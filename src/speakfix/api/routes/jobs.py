@@ -43,6 +43,7 @@ async def submit_analysis(
     """Return immediately with a job id; poll ``GET /v1/jobs/{job_id}``."""
     require_consent(consent, container)
     data = await read_upload(file, container.settings.max_upload_bytes)
+    await container.ensure_models()
     if not container.ready:
         raise ModelNotReadyError("Models are still loading.")
     request_id: str = request.state.request_id
