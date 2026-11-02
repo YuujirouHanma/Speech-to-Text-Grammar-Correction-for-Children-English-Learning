@@ -1,4 +1,4 @@
-"""Load test: how many simultaneous users can one SpeakFix instance serve?
+"""Load test: how many simultaneous users can one Speech Grammar instance serve?
 
 Each virtual user repeatedly sends a recording (or a sentence), waits for the
 answer, pauses ("think time") and starts again. Users get distinct client IPs
@@ -8,7 +8,7 @@ limit applies as it would to real visitors behind a tunnel or reverse proxy.
 ``--burst`` sends one request per user at the same moment, like a class pressing the button.
 
 Run it against a server on the same machine, e.g.:
-    python -m speakfix                     # in another terminal
+    python -m speech_grammar                     # in another terminal
     python scripts/load_test.py --users 10 30 60 --audio ../recorded.wav --seconds 60
     python scripts/load_test.py --users 30 --audio ../recorded.wav --same-ip --burst
 """

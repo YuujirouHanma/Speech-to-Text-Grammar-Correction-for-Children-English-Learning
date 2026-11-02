@@ -5,7 +5,7 @@ Semua angka di sini berasal dari laporan lain di folder `reports/`.
 
 ## Kesimpulan
 
-SpeakFix **siap masuk tahap testing dengan suara orang dewasa**, lewat demo publik dari laptop atau server
+Speech Grammar **siap masuk tahap testing dengan suara orang dewasa**, lewat demo publik dari laptop atau server
 lokal. Semua pengujian otomatis lulus, dan hasil evaluasi konsisten dengan yang tertulis di README.
 
 Yang **belum** teruji dan perlu dicoba tim: perekaman dari HP sungguhan. Yang **belum boleh** dilakukan: memakai
@@ -26,7 +26,7 @@ peringatan jika memori yang tersedia di bawah 6 GB.
 Demo untuk banyak orang (link HTTPS sementara, mikrofon bisa dipakai di HP):
 
 ```powershell
-cd speakfix
+cd speech-grammar
 powershell -ExecutionPolicy Bypass -File scripts\run_public_demo.ps1
 ```
 
@@ -36,9 +36,9 @@ link mati. Jangan biarkan link menyala tanpa diawasi.
 Uji sendiri di laptop:
 
 ```powershell
-cd speakfix
+cd speech-grammar
 $env:HF_HUB_OFFLINE = "1"
-.\.venv\Scripts\python.exe -m speakfix        # buka http://localhost:8000
+.\.venv\Scripts\python.exe -m speech_grammar        # buka http://localhost:8000
 ```
 
 ## Skenario uji untuk tim
@@ -92,7 +92,7 @@ pada kalimat yang sebenarnya benar paling penting untuk dilaporkan.
 | Pujian "Bagus!" muncul saat saran ditahan atau tidak ada suara | Pengguna mengira kalimatnya benar | Pujian tidak muncul pada kasus itu |
 | Kalimat benar yang diketik tanpa titik selalu mendapat catatan "belum cukup yakin" | Catatan menyesatkan, tanpa pujian | Titik yang hilang langsung disarankan, tanpa catatan |
 | Evaluasi Kaggle kehilangan 2 dari 302 kalimat tanpa pesan | Angka sedikit melenceng | Pemuat data diperbaiki, script berhenti jika ada yang hilang |
-| Whisper base.en di GPU lebih buruk dari yang tertulis di README | Kesalahan lebih sering hilang dari transkrip | `SPEAKFIX_WHISPER_MODEL=auto`: small.en di GPU, base.en di CPU |
+| Whisper base.en di GPU lebih buruk dari yang tertulis di README | Kesalahan lebih sering hilang dari transkrip | `SPEECH_GRAMMAR_WHISPER_MODEL=auto`: small.en di GPU, base.en di CPU |
 | File terlalu besar memutus koneksi | Pesan "Failed to fetch" | Dicek di browser, server menjawab 413 dengan benar |
 | Error memori dilaporkan sebagai error umum | HTTP 500, dan pesan tidak jelas | Semua error memori menjadi 503 "server sedang penuh" |
 | OpenBLAS membuat 15 thread dan memakan 0,5 GB tanpa manfaat | Memori boros | Dibatasi 1 thread |

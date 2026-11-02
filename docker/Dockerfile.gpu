@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # GPU image: CUDA 12.8 + cuDNN 9 runtime (required by CTranslate2 4.x / faster-whisper).
-# Build:  docker build -f docker/Dockerfile.gpu -t speakfix:gpu .
-# Run:    docker run --gpus all -p 8000:8000 -v ./models:/models:ro speakfix:gpu
+# Build:  docker build -f docker/Dockerfile.gpu -t speech-grammar:gpu .
+# Run:    docker run --gpus all -p 8000:8000 -v ./models:/models:ro speech-grammar:gpu
 # Host requirements: NVIDIA driver >= 570 and the NVIDIA Container Toolkit.
 
 ARG CUDA_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
@@ -38,14 +38,14 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     HF_HUB_OFFLINE=1 \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility \
-    SPEAKFIX_ENVIRONMENT=prod \
-    SPEAKFIX_MODELS_DIR=/models \
-    SPEAKFIX_DEVICE=cuda \
-    SPEAKFIX_CORRECTOR_BACKEND=ctranslate2 \
-    SPEAKFIX_CORRECTOR_FALLBACK_BACKEND=none \
-    SPEAKFIX_WHISPER_MODEL=small.en \
-    SPEAKFIX_INFERENCE_WORKERS=2 \
-    SPEAKFIX_TEMP_DIR=/tmp/speakfix
+    SPEECH_GRAMMAR_ENVIRONMENT=prod \
+    SPEECH_GRAMMAR_MODELS_DIR=/models \
+    SPEECH_GRAMMAR_DEVICE=cuda \
+    SPEECH_GRAMMAR_CORRECTOR_BACKEND=ctranslate2 \
+    SPEECH_GRAMMAR_CORRECTOR_FALLBACK_BACKEND=none \
+    SPEECH_GRAMMAR_WHISPER_MODEL=small.en \
+    SPEECH_GRAMMAR_INFERENCE_WORKERS=2 \
+    SPEECH_GRAMMAR_TEMP_DIR=/tmp/speech_grammar
 
 COPY --from=builder /opt/venv /opt/venv
 WORKDIR /home/app
@@ -55,4 +55,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
   CMD python3 -c "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)"
 
-CMD ["speakfix"]
+CMD ["speech-grammar"]

@@ -8,8 +8,8 @@ checked against the archive.
 Whisper is not included: it is re-downloaded by ``prepare_models.py whisper``.
 
 Examples:
-    python scripts/backup_models.py --name t5-gec-v2 --out-dir ../../speakfix-backups
-    # restore: unzip into speakfix/ (it recreates models/...), then run the tests
+    python scripts/backup_models.py --name t5-gec-v2 --out-dir ../../speech-grammar-backups
+    # restore: unzip into speech-grammar/ (it recreates models/...), then run the tests
 """
 
 from __future__ import annotations
@@ -77,7 +77,7 @@ def main() -> None:
 
     files = files_to_pack(args.models_dir, args.name)
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    zip_path = args.out_dir / f"speakfix-{args.name}-{dt.date.today().isoformat()}.zip"
+    zip_path = args.out_dir / f"speech-grammar-{args.name}-{dt.date.today().isoformat()}.zip"
     root = args.models_dir.parent
     # Weights barely compress, so store them as-is (fast); small text files are deflated.
     with zipfile.ZipFile(zip_path, "w") as archive:

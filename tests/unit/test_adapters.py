@@ -5,25 +5,25 @@ import httpx
 import numpy as np
 import pytest
 
-from speakfix.config import Device, SttEngine
-from speakfix.domain.errors import (
+from speech_grammar.config import Device, SttEngine
+from speech_grammar.domain.errors import (
     CloudSttDisabledError,
     InferenceError,
     InferenceTimeoutError,
     ResourceExhaustedError,
 )
-from speakfix.inference.cloud_stt import DeepgramSpeechToText
-from speakfix.inference.devices import (
+from speech_grammar.inference.cloud_stt import DeepgramSpeechToText
+from speech_grammar.inference.devices import (
     resolve_device,
     resolve_t5_compute_type,
     resolve_whisper_compute_type,
 )
-from speakfix.inference.factory import (
+from speech_grammar.inference.factory import (
     build_stt_engine,
     choose_whisper_model,
     resolve_whisper_model,
 )
-from speakfix.inference.whisper_stt import _display_name
+from speech_grammar.inference.whisper_stt import _display_name
 from tests.conftest import make_settings
 
 SILENCE = np.zeros(16_000, dtype=np.float32)
@@ -91,7 +91,7 @@ def test_device_resolution() -> None:
 def test_pip_cuda_libraries_are_put_on_path(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    from speakfix.inference import devices
+    from speech_grammar.inference import devices
 
     torch_lib = tmp_path / "torch" / "lib"
     torch_lib.mkdir(parents=True)
@@ -107,7 +107,7 @@ def test_pip_cuda_libraries_are_put_on_path(
 def test_cuda_libraries_fall_back_to_pip_copies_on_windows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from speakfix.inference import devices
+    from speech_grammar.inference import devices
 
     attempts = iter([False, True])  # missing system-wide, loadable after exposing
     monkeypatch.setattr(devices.sys, "platform", "win32")
@@ -134,9 +134,9 @@ def test_resolve_whisper_model(tmp_path: Path) -> None:
 def test_auto_device_falls_back_to_cpu_when_cuda_libraries_missing(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    import speakfix.inference.factory as factory
-    import speakfix.inference.t5_ct2 as t5_ct2
-    from speakfix.config import CorrectorBackend
+    import speech_grammar.inference.factory as factory
+    import speech_grammar.inference.t5_ct2 as t5_ct2
+    from speech_grammar.config import CorrectorBackend
 
     class FakeCt2:
         def __init__(self, model_dir: Path, *, device: str, compute_type: str) -> None:
@@ -184,7 +184,7 @@ def test_choose_whisper_model_per_device(tmp_path: Path) -> None:
     ],
 )
 def test_ct2_runtime_errors_are_classified(message: str, error: type[Exception]) -> None:
-    from speakfix.inference.t5_ct2 import _inference_error
+    from speech_grammar.inference.t5_ct2 import _inference_error
 
     assert type(_inference_error(RuntimeError(message))) is error
 
@@ -199,7 +199,7 @@ def test_ct2_runtime_errors_are_classified(message: str, error: type[Exception])
     ],
 )
 def test_whisper_failures_are_classified(raised: Exception, error: type[Exception]) -> None:
-    from speakfix.inference.whisper_stt import WhisperSpeechToText
+    from speech_grammar.inference.whisper_stt import WhisperSpeechToText
 
     class Failing:
         def transcribe(self, *_args: object, **_kwargs: object) -> None:

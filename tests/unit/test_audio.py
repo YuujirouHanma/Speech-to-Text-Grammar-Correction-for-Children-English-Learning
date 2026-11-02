@@ -7,9 +7,9 @@ import numpy as np
 import psutil
 import pytest
 
-from speakfix.audio.decode import check_duration, decode_audio, probe_duration
-from speakfix.audio.encode import to_wav_bytes
-from speakfix.audio.preprocess import (
+from speech_grammar.audio.decode import check_duration, decode_audio, probe_duration
+from speech_grammar.audio.encode import to_wav_bytes
+from speech_grammar.audio.preprocess import (
     analyze_signal,
     highpass,
     normalize_loudness,
@@ -17,14 +17,14 @@ from speakfix.audio.preprocess import (
     quality_warnings,
     spectral_gate,
 )
-from speakfix.audio.validation import sniff_format, validate_upload
-from speakfix.domain.errors import (
+from speech_grammar.audio.validation import sniff_format, validate_upload
+from speech_grammar.domain.errors import (
     AudioDurationError,
     AudioTooLargeError,
     InvalidAudioError,
     UnsupportedMediaError,
 )
-from speakfix.services.analysis import AnalysisService, AudioPolicy
+from speech_grammar.services.analysis import AnalysisService, AudioPolicy
 from tests.conftest import make_wav
 
 SR = 16_000
@@ -177,10 +177,11 @@ def test_decoding_starts_no_threads() -> None:
     assert process.num_threads() <= before
 
 
-def test_importing_speakfix_limits_numpy_threads() -> None:
+def test_importing_speech_grammar_limits_numpy_threads() -> None:
     # OpenBLAS would start a thread per core and commit about 500 MB for them.
     code = (
-        "import os; os.environ.pop('OPENBLAS_NUM_THREADS', None); import speakfix, numpy, psutil;"
+        "import os; os.environ.pop('OPENBLAS_NUM_THREADS', None);"
+        "import speech_grammar, numpy, psutil;"
         "print(os.environ['OPENBLAS_NUM_THREADS'], psutil.Process().num_threads())"
     )
     limit, threads = subprocess.run(

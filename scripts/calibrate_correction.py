@@ -25,9 +25,9 @@ from pathlib import Path
 from typing import Any
 
 from gec_metrics import GecScorer
-from speakfix.config import Device
-from speakfix.inference.devices import resolve_device, resolve_t5_compute_type
-from speakfix.services.corrector import CorrectionConfig, GrammarCorrector
+from speech_grammar.config import Device
+from speech_grammar.inference.devices import resolve_device, resolve_t5_compute_type
+from speech_grammar.services.corrector import CorrectionConfig, GrammarCorrector
 from train_t5 import build_splits, key
 
 MARGINS = [-math.inf, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]
@@ -113,7 +113,7 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path("reports/correction_calibration.json"))
     args = parser.parse_args()
 
-    from speakfix.inference.t5_ct2 import Ct2Seq2SeqBackend
+    from speech_grammar.inference.t5_ct2 import Ct2Seq2SeqBackend
 
     device = resolve_device(Device(args.device))
     backend = CachedBackend(

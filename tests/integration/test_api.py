@@ -45,12 +45,12 @@ class TestOps:
         assert 'route="/v1/text/correct"' in body
         assert 'route="/v1/jobs/{job_id}"' in body
         assert "does-not-exist" not in body
-        assert "speakfix_stage_duration_seconds" in body
+        assert "speech_grammar_stage_duration_seconds" in body
 
     def test_ui_served_with_csp(self, client: TestClient) -> None:
         response = client.get("/")
         assert response.status_code == 200
-        assert "SpeakFix" in response.text
+        assert "Speech to Text Grammar Correction" in response.text
         assert "default-src 'self'" in response.headers["Content-Security-Policy"]
         assert client.get("/static/app.js").status_code == 200
 
@@ -178,7 +178,7 @@ class TestAudioEndpoints:
         assert response.json()["error"]["code"] == "payload_too_large"
 
     def test_correction_failure_still_returns_transcript(self, app_factory: Factory) -> None:
-        from speakfix.domain.errors import InferenceError
+        from speech_grammar.domain.errors import InferenceError
 
         backend = FakeBackend(error=InferenceError)
         client = app_factory(backend=backend)

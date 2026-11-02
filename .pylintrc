@@ -1,7 +1,7 @@
 # Ruff is the project linter (see pyproject.toml). This file only aligns the
 # editor's pylint integration with the project's conventions.
 [MAIN]
-init-hook="import sys; sys.path.insert(0, 'speakfix/src'); sys.path.insert(0, 'src')"
+init-hook="import sys; sys.path.insert(0, 'speech-grammar/src'); sys.path.insert(0, 'src')"
 
 [MESSAGES CONTROL]
 disable=

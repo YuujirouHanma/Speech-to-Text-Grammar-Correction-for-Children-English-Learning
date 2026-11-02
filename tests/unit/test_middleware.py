@@ -4,7 +4,7 @@ import asyncio
 
 from starlette.types import Message, Receive, Scope, Send
 
-from speakfix.api.middleware import BodySizeLimitMiddleware
+from speech_grammar.api.middleware import BodySizeLimitMiddleware
 
 
 def run(declared: int, messages: list[Message]) -> list[str]:

@@ -1,4 +1,4 @@
-"""End-to-end check of the SpeakFix page in a real browser, through Playwright.
+"""End-to-end check of the Speech Grammar page in a real browser, through Playwright.
 
 Types, uploads and records (with a fake microphone) the way a visitor does, and checks what the
 page shows, including its error messages, phone layout and dark mode. Exits with status 1 if a
@@ -6,7 +6,7 @@ check failed.
 
     pip install playwright
     playwright install firefox webkit      # Edge and Chrome use the installed browser
-    python -m speakfix                     # in another terminal
+    python -m speech_grammar                     # in another terminal
     python scripts/check_browser.py http://127.0.0.1:8000 --engine msedge
 
 WebKit has no fake microphone, so its recording checks are skipped.
@@ -400,7 +400,7 @@ def main() -> None:
     )
     parser.add_argument("--mp3", type=Path, default=Path("../../FP/they is here today.mp3"))
     parser.add_argument(
-        "--shots", type=Path, default=Path(tempfile.gettempdir()) / "speakfix-browser-check"
+        "--shots", type=Path, default=Path(tempfile.gettempdir()) / "speech-grammar-browser-check"
     )
     args = parser.parse_args()
     url, engine, shots = args.url.rstrip("/"), args.engine, args.shots

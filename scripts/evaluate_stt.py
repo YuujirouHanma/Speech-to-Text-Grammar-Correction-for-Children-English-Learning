@@ -22,11 +22,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from speakfix.audio.decode import TARGET_SAMPLE_RATE, decode_audio
-from speakfix.audio.preprocess import preprocess
-from speakfix.config import Device
-from speakfix.inference.devices import resolve_device, resolve_whisper_compute_type
-from speakfix.inference.whisper_stt import WhisperSpeechToText
+from speech_grammar.audio.decode import TARGET_SAMPLE_RATE, decode_audio
+from speech_grammar.audio.preprocess import preprocess
+from speech_grammar.config import Device
+from speech_grammar.inference.devices import resolve_device, resolve_whisper_compute_type
+from speech_grammar.inference.whisper_stt import WhisperSpeechToText
 
 AUDIO_EXT = {".mp3", ".wav", ".m4a", ".ogg", ".webm", ".flac"}
 

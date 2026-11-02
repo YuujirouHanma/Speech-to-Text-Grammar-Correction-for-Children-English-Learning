@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-  Public SpeakFix demo from this laptop: local server + Cloudflare Quick Tunnel.
+  Public Speech Grammar demo from this laptop: local server + Cloudflare Quick Tunnel.
 
 .DESCRIPTION
-  Starts SpeakFix on 127.0.0.1 (not reachable from the Wi-Fi/LAN) in demo mode, then
+  Starts Speech Grammar on 127.0.0.1 (not reachable from the Wi-Fi/LAN) in demo mode, then
   opens a temporary https://<random>.trycloudflare.com link to it. Share that link: it
   works from any device, and HTTPS lets browsers use the microphone.
   Stop with Ctrl+C (server and tunnel both stop). The link changes on every run.
@@ -64,29 +64,29 @@ if ($freeCommitGb -lt 6) {
 }
 
 $env:HF_HUB_OFFLINE = "1"
-$env:SPEAKFIX_HOST = "127.0.0.1"        # only the tunnel can reach the server
-$env:SPEAKFIX_PORT = "$Port"
-$env:SPEAKFIX_DEMO_MODE = "true"        # UI asks for adult voices only
-$env:SPEAKFIX_INFERENCE_WORKERS = "$Workers"
-$env:SPEAKFIX_RATE_LIMIT_PER_MINUTE = "$RateLimitPerMinute"
-$env:SPEAKFIX_MAX_PENDING_REQUESTS = "$MaxPendingRequests"
+$env:SPEECH_GRAMMAR_HOST = "127.0.0.1"        # only the tunnel can reach the server
+$env:SPEECH_GRAMMAR_PORT = "$Port"
+$env:SPEECH_GRAMMAR_DEMO_MODE = "true"        # UI asks for adult voices only
+$env:SPEECH_GRAMMAR_INFERENCE_WORKERS = "$Workers"
+$env:SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE = "$RateLimitPerMinute"
+$env:SPEECH_GRAMMAR_MAX_PENDING_REQUESTS = "$MaxPendingRequests"
 $env:FORWARDED_ALLOW_IPS = "127.0.0.1"  # trust the tunnel's X-Forwarded-For (per-visitor rate limit)
 
-$server = Start-Process -FilePath $python -ArgumentList "-m", "speakfix" -WorkingDirectory $root `
+$server = Start-Process -FilePath $python -ArgumentList "-m", "speech_grammar" -WorkingDirectory $root `
   -PassThru -NoNewWindow
 try {
   Write-Host "Loading models..."
   $ready = $false
   for ($i = 0; $i -lt 180 -and -not $ready; $i++) {
-    if ($server.HasExited) { throw "SpeakFix exited during startup; see the log above." }
+    if ($server.HasExited) { throw "Speech Grammar exited during startup; see the log above." }
     try {
       $ready = (Invoke-WebRequest "http://127.0.0.1:$Port/readyz" -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200
     } catch {
       Start-Sleep -Seconds 1
     }
   }
-  if (-not $ready) { throw "SpeakFix did not become ready; see the log above." }
-  Write-Host "SpeakFix is ready. The public link is the https://...trycloudflare.com line below."
+  if (-not $ready) { throw "Speech Grammar did not become ready; see the log above." }
+  Write-Host "Speech Grammar is ready. The public link is the https://...trycloudflare.com line below."
   & $cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$Port"
 }
 finally {

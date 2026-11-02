@@ -19,7 +19,7 @@
           "errant_f05_grammar": 0.4425,
           "seconds": 121.0
         },
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7112,
           "bleu_4ref": 0.8562,
           "exact_any": 0.336,
@@ -51,7 +51,7 @@
           "errant_f05_grammar": 0.4772,
           "seconds": 23.2
         },
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.6847,
           "bleu_4ref": 0.6847,
           "exact_any": 0.245,
@@ -196,7 +196,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -450,7 +450,7 @@
           "reference": "An apple a day keeps the doctor away."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He don't know the answer.",
@@ -584,7 +584,7 @@
     "backend": "ctranslate2:int8_float32@cpu",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7269,
           "bleu_4ref": 0.875,
           "exact_any": 0.3641,
@@ -601,7 +601,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.8147,
           "bleu_4ref": 0.8147,
           "exact_any": 0.5331,
@@ -618,7 +618,7 @@
         }
       },
       "jfleg_test_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.9376,
           "bleu_4ref": 0.9376,
           "exact_any": 0.6774,
@@ -635,7 +635,7 @@
         }
       },
       "kaggle_gc_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.98,
           "bleu_4ref": 0.98,
           "exact_any": 0.9371,
@@ -653,7 +653,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -780,7 +780,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",
@@ -907,7 +907,7 @@
           "reference": "An apple a day keeps the doctor away."
         }
       ],
-      "jfleg_test_correct/speakfix": [
+      "jfleg_test_correct/speech_grammar": [
         {
           "source": "New technology has been introduced to society.",
           "output": "New technology has been introduced to society.",
@@ -1034,7 +1034,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc_correct/speakfix": [
+      "kaggle_gc_correct/speech_grammar": [
         {
           "source": "He doesn't know the answer.",
           "output": "He doesn't know the answer.",
@@ -1168,7 +1168,7 @@
     "backend": "ctranslate2:int8_float32@cpu",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7231,
           "bleu_4ref": 0.8709,
           "exact_any": 0.3574,
@@ -1185,7 +1185,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7574,
           "bleu_4ref": 0.7574,
           "exact_any": 0.4073,
@@ -1202,7 +1202,7 @@
         }
       },
       "jfleg_test_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.9817,
           "bleu_4ref": 0.9817,
           "exact_any": 0.9277,
@@ -1219,7 +1219,7 @@
         }
       },
       "kaggle_gc_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.9962,
           "bleu_4ref": 0.9962,
           "exact_any": 0.9901,
@@ -1237,7 +1237,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -1364,7 +1364,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",
@@ -1491,7 +1491,7 @@
           "reference": "An apple a day keeps the doctor away."
         }
       ],
-      "jfleg_test_correct/speakfix": [
+      "jfleg_test_correct/speech_grammar": [
         {
           "source": "New technology has been introduced to society.",
           "output": "New technology has been introduced to society.",
@@ -1618,7 +1618,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc_correct/speakfix": [
+      "kaggle_gc_correct/speech_grammar": [
         {
           "source": "He doesn't know the answer.",
           "output": "He doesn't know the answer.",
@@ -1752,7 +1752,7 @@
     "backend": "ctranslate2:int8_float32@cpu",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7208,
           "bleu_4ref": 0.8684,
           "exact_any": 0.34,
@@ -1769,7 +1769,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7415,
           "bleu_4ref": 0.7415,
           "exact_any": 0.3874,
@@ -1786,7 +1786,7 @@
         }
       },
       "jfleg_test_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.9823,
           "bleu_4ref": 0.9823,
           "exact_any": 0.9304,
@@ -1803,7 +1803,7 @@
         }
       },
       "kaggle_gc_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.9962,
           "bleu_4ref": 0.9962,
           "exact_any": 0.9901,
@@ -1821,7 +1821,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -1948,7 +1948,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",
@@ -2075,7 +2075,7 @@
           "reference": "An apple a day keeps the doctor away."
         }
       ],
-      "jfleg_test_correct/speakfix": [
+      "jfleg_test_correct/speech_grammar": [
         {
           "source": "New technology has been introduced to society.",
           "output": "New technology has been introduced to society.",
@@ -2202,7 +2202,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc_correct/speakfix": [
+      "kaggle_gc_correct/speech_grammar": [
         {
           "source": "He doesn't know the answer.",
           "output": "He doesn't know the answer.",
@@ -2336,7 +2336,7 @@
     "backend": "ctranslate2:int8_float32@cpu",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7215,
           "bleu_4ref": 0.8659,
           "exact_any": 0.3414,
@@ -2353,7 +2353,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.8056,
           "bleu_4ref": 0.8056,
           "exact_any": 0.5265,
@@ -2371,7 +2371,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -2498,7 +2498,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",
@@ -2632,7 +2632,7 @@
     "backend": "ctranslate2:int8_float32@cuda",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7225,
           "bleu_4ref": 0.8698,
           "exact_any": 0.3521,
@@ -2649,7 +2649,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7583,
           "bleu_4ref": 0.7583,
           "exact_any": 0.4106,
@@ -2666,7 +2666,7 @@
         }
       },
       "jfleg_test_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.9827,
           "bleu_4ref": 0.9827,
           "exact_any": 0.925,
@@ -2683,7 +2683,7 @@
         }
       },
       "kaggle_gc_correct": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.9962,
           "bleu_4ref": 0.9962,
           "exact_any": 0.9901,
@@ -2701,7 +2701,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -2828,7 +2828,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",
@@ -2955,7 +2955,7 @@
           "reference": "An apple a day keeps the doctor away."
         }
       ],
-      "jfleg_test_correct/speakfix": [
+      "jfleg_test_correct/speech_grammar": [
         {
           "source": "New technology has been introduced to society.",
           "output": "New technology has been introduced to society.",
@@ -3082,7 +3082,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc_correct/speakfix": [
+      "kaggle_gc_correct/speech_grammar": [
         {
           "source": "He doesn't know the answer.",
           "output": "He doesn't know the answer.",
@@ -3216,7 +3216,7 @@
     "backend": "ctranslate2:int8_float32@cuda",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.726,
           "bleu_4ref": 0.8723,
           "exact_any": 0.3494,
@@ -3226,7 +3226,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.8113,
           "bleu_4ref": 0.8113,
           "exact_any": 0.5265,
@@ -3237,7 +3237,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -3364,7 +3364,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",
@@ -3498,7 +3498,7 @@
     "backend": "ctranslate2:float32@cuda",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.7235,
           "bleu_4ref": 0.8717,
           "exact_any": 0.3601,
@@ -3508,7 +3508,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.8083,
           "bleu_4ref": 0.8083,
           "exact_any": 0.5232,
@@ -3519,7 +3519,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -3646,7 +3646,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",
@@ -3780,7 +3780,7 @@
     "backend": "ctranslate2:int8_bfloat16@cuda",
     "results": {
       "jfleg_test": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.723,
           "bleu_4ref": 0.8672,
           "exact_any": 0.3454,
@@ -3790,7 +3790,7 @@
         }
       },
       "kaggle_gc": {
-        "speakfix": {
+        "speech_grammar": {
           "bleu_1ref": 0.8055,
           "bleu_4ref": 0.8055,
           "exact_any": 0.5232,
@@ -3801,7 +3801,7 @@
       }
     },
     "examples": {
-      "jfleg_test/speakfix": [
+      "jfleg_test/speech_grammar": [
         {
           "source": "New and new technology has been introduced to the society.",
           "output": "New and new technology has been introduced to the society.",
@@ -3928,7 +3928,7 @@
           "reference": "If they prefer to choose cars than motor bikes, that means there will be many cars."
         }
       ],
-      "kaggle_gc/speakfix": [
+      "kaggle_gc/speech_grammar": [
         {
           "source": "He don't know the answer.",
           "output": "He doesn't know the answer.",

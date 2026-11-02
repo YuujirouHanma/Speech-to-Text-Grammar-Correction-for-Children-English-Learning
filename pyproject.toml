@@ -3,7 +3,7 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "speakfix"
+name = "speech-grammar"
 version = "1.0.0"
 description = "Speech transcription + grammar correction service for monitoring children's English learning (Whisper + T5)."
 readme = "README.md"
@@ -40,7 +40,7 @@ cloud = ["google-genai>=1.0"]
 # Error-type classification of edits (ERRANT), useful for learner feedback.
 errant = ["errant>=3.0", "spacy>=3.7,<4"]
 train = [
-    "speakfix[torch]",
+    "speech-grammar[torch]",
     "accelerate>=0.33",
     "pandas>=2.0",
     "sacrebleu>=2.4",
@@ -56,10 +56,10 @@ dev = [
 ]
 
 [project.scripts]
-speakfix = "speakfix.__main__:main"
+speech-grammar = "speech_grammar.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/speakfix"]
+packages = ["src/speech_grammar"]
 
 [tool.ruff]
 line-length = 100
@@ -117,7 +117,7 @@ markers = [
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.coverage.run]
-source = ["speakfix"]
+source = ["speech_grammar"]
 branch = true
 
 [tool.coverage.report]

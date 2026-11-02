@@ -34,7 +34,7 @@ from typing import Any
 
 import pandas as pd
 
-from speakfix.text.normalize import detokenize, ensure_terminal_punctuation, normalize_text
+from speech_grammar.text.normalize import detokenize, ensure_terminal_punctuation, normalize_text
 
 PREFIX = "grammar: "
 

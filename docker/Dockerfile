@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # CPU image: CTranslate2 (int8) + faster-whisper. No PyTorch -> small image, fast start.
-# Build:  docker build -f docker/Dockerfile -t speakfix:cpu .
-# Run:    docker run -p 8000:8000 -v ./models:/models:ro speakfix:cpu
+# Build:  docker build -f docker/Dockerfile -t speech-grammar:cpu .
+# Run:    docker run -p 8000:8000 -v ./models:/models:ro speech-grammar:cpu
 
 ARG PYTHON_IMAGE=python:3.12-slim-bookworm
 
@@ -24,7 +24,7 @@ RUN pip install --upgrade pip wheel \
 
 # ---------------------------------------------------------------- runtime stage
 FROM ${PYTHON_IMAGE} AS runtime
-LABEL org.opencontainers.image.title="speakfix" \
+LABEL org.opencontainers.image.title="speech-grammar" \
       org.opencontainers.image.description="Speech transcription + grammar correction API (Whisper + T5)"
 
 RUN apt-get update \
@@ -36,12 +36,12 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     HF_HUB_OFFLINE=1 \
-    SPEAKFIX_ENVIRONMENT=prod \
-    SPEAKFIX_MODELS_DIR=/models \
-    SPEAKFIX_DEVICE=cpu \
-    SPEAKFIX_CORRECTOR_BACKEND=ctranslate2 \
-    SPEAKFIX_CORRECTOR_FALLBACK_BACKEND=none \
-    SPEAKFIX_TEMP_DIR=/tmp/speakfix
+    SPEECH_GRAMMAR_ENVIRONMENT=prod \
+    SPEECH_GRAMMAR_MODELS_DIR=/models \
+    SPEECH_GRAMMAR_DEVICE=cpu \
+    SPEECH_GRAMMAR_CORRECTOR_BACKEND=ctranslate2 \
+    SPEECH_GRAMMAR_CORRECTOR_FALLBACK_BACKEND=none \
+    SPEECH_GRAMMAR_TEMP_DIR=/tmp/speech_grammar
 
 COPY --from=builder /opt/venv /opt/venv
 WORKDIR /home/app
@@ -51,4 +51,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
   CMD python -c "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)"
 
-CMD ["speakfix"]
+CMD ["speech-grammar"]
