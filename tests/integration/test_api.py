@@ -25,6 +25,7 @@ class TestOps:
             "demo_mode": False,
             "feedback_language": "id",
             "api_key_required": False,
+            "load_models_on_demand": False,
         }
 
     def test_not_ready_returns_503(self, app_factory: Factory) -> None:
@@ -230,3 +231,46 @@ def test_healthz_reports_stuck_inference(client: TestClient) -> None:
     assert client.get("/readyz").status_code == 503
     container._running.clear()
     assert client.get("/healthz").status_code == 200
+
+
+class TestOnDemandModels:
+    def test_the_server_answers_before_any_model_is_loaded(self, app_factory: Factory) -> None:
+        client = app_factory(load_models_on_demand=True)
+        assert client.get("/healthz").status_code == 200
+        assert client.get("/").status_code == 200
+        assert client.get("/readyz").status_code == 503
+        info = client.get("/v1/info").json()
+        assert info["corrector"] is None
+        assert info["ui"]["load_models_on_demand"] is True
+
+    def test_typed_text_loads_the_models(self, app_factory: Factory) -> None:
+        client = app_factory(load_models_on_demand=True)
+        assert client.post("/v1/text/correct", json={"text": "He go home."}).status_code == 200
+        assert client.get("/readyz").status_code == 200
+
+    def test_a_recording_loads_the_models(self, app_factory: Factory) -> None:
+        client = app_factory(load_models_on_demand=True)
+        response = client.post("/v1/audio/analyze", files=_audio(), data={"consent": "true"})
+        assert response.status_code == 200
+        assert client.get("/readyz").status_code == 200
+
+    def test_a_refused_recording_loads_nothing(self, app_factory: Factory) -> None:
+        client = app_factory(load_models_on_demand=True)
+        assert client.post("/v1/audio/analyze", files=_audio()).status_code == 403
+        assert client.get("/readyz").status_code == 503
+
+    def test_warmup_loads_the_models(self, app_factory: Factory) -> None:
+        client = app_factory(load_models_on_demand=True)
+        response = client.post("/v1/warmup")
+        assert response.status_code == 200
+        assert response.json() == {"ready": True}
+        assert client.get("/readyz").status_code == 200
+
+    def test_warmup_reports_a_failed_load(self, app_factory: Factory) -> None:
+        client = app_factory(load_models_on_demand=True, fail_corrector=True)
+        response = client.post("/v1/warmup")
+        assert response.status_code == 503
+        assert response.json()["error"]["code"] == "model_not_ready"
+
+    def test_warmup_answers_at_once_when_models_load_at_startup(self, app_factory: Factory) -> None:
+        assert app_factory().post("/v1/warmup").json() == {"ready": True}

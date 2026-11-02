@@ -80,6 +80,14 @@ async function callApi(url, options) {
   return body;
 }
 
+/** The first request after a server has slept can also load the models: say so instead of looking stuck. */
+function slowHintLater() {
+  return setTimeout(
+    () => setStatus("Server baru dinyalakan dan sedang memuat model. Permintaan pertama bisa lebih lama, mohon tunggu…"),
+    8000
+  );
+}
+
 function showNotes(codes) {
   const notes = [...new Set(codes)].map((code) => NOTES[code]).filter(Boolean);
   $("warnings").textContent = notes.join(" ");
@@ -149,6 +157,7 @@ async function analyzeAudio(blob, filename) {
   form.append("file", blob, filename);
   form.append("consent", "true");
   setStatus("Mendengarkan dan memeriksa grammar…");
+  const hint = slowHintLater();
   try {
     const body = await callApi("/v1/audio/analyze", { method: "POST", headers: headers(), body: form });
     if (body.correction) {
@@ -165,8 +174,10 @@ async function analyzeAudio(blob, filename) {
       showNotes(body.warnings);
       $("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
+    clearTimeout(hint);
     setStatus("");
   } catch (err) {
+    clearTimeout(hint);
     setStatus(err.message, true);
   }
 }
@@ -175,6 +186,7 @@ async function checkText() {
   const text = $("textInput").value.trim();
   if (!text) return;
   setStatus("Memeriksa grammar…");
+  const hint = slowHintLater();
   try {
     const body = await callApi("/v1/text/correct", {
       method: "POST",
@@ -182,8 +194,10 @@ async function checkText() {
       body: JSON.stringify({ text }),
     });
     renderCorrection(body.correction, { timings: body.timings_ms });
+    clearTimeout(hint);
     setStatus("");
   } catch (err) {
+    clearTimeout(hint);
     setStatus(err.message, true);
   }
 }
@@ -269,6 +283,10 @@ async function applyServerSettings() {
       `Durasi rekaman terlalu pendek atau terlalu panjang (maksimal ${maxAudioSeconds} detik).`;
     $("timer").textContent = `0:00 / ${formatTime(recordingLimit())}`;
     $("apiKeyBox").hidden = !info.ui?.api_key_required;
+    if (info.ui?.load_models_on_demand && !(info.corrector && info.stt)) {
+      // Spend the wait while the visitor is still reading or recording, not after they press a button.
+      callApi("/v1/warmup", { method: "POST", headers: headers() }).catch(() => {});
+    }
     if (info.ui && info.ui.demo_mode) {
       $("demoBanner").hidden = false;
       $("consentText").textContent =

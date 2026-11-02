@@ -1,0 +1,62 @@
+# syntax=docker/dockerfile:1.7
+# Image for Vercel's container runtime (README: "Vercel"). The packages of docker/Dockerfile plus
+# the models, because a Vercel instance has no volume to mount them from. Needs PORT=8000 in the
+# project settings.
+
+ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+
+# ---------------------------------------------------------------- builder stage
+FROM ${PYTHON_IMAGE} AS builder
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /build
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+COPY pyproject.toml README.md constraints.txt ./
+COPY src ./src
+RUN pip install --upgrade pip wheel \
+ && pip install -c constraints.txt ".[errant]" \
+ && python -m spacy download en_core_web_sm \
+ && find /opt/venv -name "__pycache__" -type d -prune -exec rm -rf {} +
+
+# The Whisper revision is the one the STT evaluation in the README ran on.
+ARG T5_MODEL_REPO=Jagardo/speakfix-t5-gec-v2-ct2
+ARG WHISPER_REVISION=3d3d5dee26484f91867d81cb899cfcf72b96be6c
+RUN python -c "from huggingface_hub import snapshot_download as get; \
+get('${T5_MODEL_REPO}', local_dir='/models/t5-gec-v2-ct2'); \
+get('Systran/faster-whisper-base.en', revision='${WHISPER_REVISION}', cache_dir='/models/whisper')"
+
+# ---------------------------------------------------------------- runtime stage
+FROM ${PYTHON_IMAGE} AS runtime
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libgomp1 \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd --system --uid 10001 --create-home --home-dir /home/app app
+
+# One small CPU, a 4.5 MB request limit, and a CPU quota that every visitor shares.
+ENV PATH="/opt/venv/bin:${PATH}" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HUB_OFFLINE=1 \
+    OMP_NUM_THREADS=1 \
+    FORWARDED_ALLOW_IPS=* \
+    SPEAKFIX_ENVIRONMENT=prod \
+    SPEAKFIX_MODELS_DIR=/models \
+    SPEAKFIX_DEVICE=cpu \
+    SPEAKFIX_CORRECTOR_BACKEND=ctranslate2 \
+    SPEAKFIX_CORRECTOR_FALLBACK_BACKEND=none \
+    SPEAKFIX_WHISPER_MODEL=base.en \
+    SPEAKFIX_WHISPER_CPU_THREADS=1 \
+    SPEAKFIX_TEMP_DIR=/tmp/speakfix \
+    SPEAKFIX_LOAD_MODELS_ON_DEMAND=true \
+    SPEAKFIX_DEMO_MODE=true \
+    SPEAKFIX_MAX_UPLOAD_MB=4 \
+    SPEAKFIX_RATE_LIMIT_PER_MINUTE=30
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /models /models
+WORKDIR /home/app
+USER app
+EXPOSE 8000
+
+CMD ["sh", "-c", "SPEAKFIX_PORT=${PORT:-8000} exec speakfix"]

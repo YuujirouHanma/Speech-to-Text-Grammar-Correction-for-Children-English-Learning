@@ -153,6 +153,9 @@ class Settings(BaseSettings):
     job_queue_size: int = Field(default=32, ge=1)
     job_ttl_seconds: int = Field(default=600, ge=10)
     job_delete_after_read: bool = False
+    # Serverless hosts pause an instance between requests, which would freeze a load left in
+    # the background: load during the first request that needs the models instead.
+    load_models_on_demand: bool = False
 
     # ------------------------------------------------------------------ privacy
     temp_dir: Path | None = None

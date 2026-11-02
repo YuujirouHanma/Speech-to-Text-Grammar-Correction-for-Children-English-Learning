@@ -8,6 +8,7 @@ from typing import Any
 import numpy as np
 import pytest
 
+from speakfix.config import Settings
 from speakfix.domain.errors import (
     InferenceError,
     JobNotFoundError,
@@ -17,6 +18,7 @@ from speakfix.domain.errors import (
     ServerBusyError,
 )
 from speakfix.services.analysis import AnalysisService
+from speakfix.services.container import Container
 from speakfix.services.corrector import GrammarCorrector
 from speakfix.services.jobs import JobManager, JobState
 from speakfix.services.privacy import PrivateTempDir, ResultCipher
@@ -278,3 +280,80 @@ def test_transcriber_keeps_the_out_of_memory_error_without_fallback() -> None:
 
     with pytest.raises(ResourceExhaustedError):  # 503 "try again", not a generic 500
         Transcriber(OutOfMemory()).transcribe(np.zeros(16000, dtype=np.float32), 16000)
+
+
+class TestOnDemandLoading:
+    @staticmethod
+    def _container(
+        *, fail_first: bool = False, on_demand: bool = True
+    ) -> tuple[Container, list[int]]:
+        loads: list[int] = []
+
+        def corrector_loader(_settings: Settings) -> GrammarCorrector:
+            loads.append(1)
+            if fail_first and len(loads) == 1:
+                raise FileNotFoundError("model files missing")
+            return GrammarCorrector(FakeBackend())
+
+        container = Container(
+            make_settings(load_models_on_demand=on_demand),
+            corrector_loader=corrector_loader,
+            transcriber_loader=lambda _settings: Transcriber(FakeSTT()),
+        )
+        return container, loads
+
+    def test_nothing_loads_at_start(self) -> None:
+        async def scenario() -> None:
+            container, loads = self._container()
+            await container.start()
+            await asyncio.sleep(0.01)
+            assert loads == []
+            assert not container.ready
+            await container.stop()
+
+        asyncio.run(scenario())
+
+    def test_requests_at_the_same_time_share_one_load(self) -> None:
+        async def scenario() -> None:
+            container, loads = self._container()
+            await asyncio.gather(*(container.ensure_models() for _ in range(5)))
+            assert container.ready
+            await container.ensure_models()
+            assert len(loads) == 1
+
+        asyncio.run(scenario())
+
+    def test_a_failed_load_is_tried_again(self) -> None:
+        async def scenario() -> None:
+            container, loads = self._container(fail_first=True)
+            await container.ensure_models()
+            assert not container.ready
+            assert "corrector" in container.load_errors
+            await container.ensure_models()
+            assert container.ready
+            assert container.load_errors == {}
+            assert len(loads) == 2
+
+        asyncio.run(scenario())
+
+    def test_a_client_leaving_does_not_stop_the_load(self) -> None:
+        async def scenario() -> None:
+            container, loads = self._container()
+            leaving = asyncio.create_task(container.ensure_models())
+            await asyncio.sleep(0)
+            leaving.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await leaving
+            await container.ensure_models()
+            assert container.ready
+            assert len(loads) == 1
+
+        asyncio.run(scenario())
+
+    def test_it_does_nothing_when_models_load_at_startup(self) -> None:
+        async def scenario() -> None:
+            container, loads = self._container(on_demand=False)
+            await container.ensure_models()
+            assert loads == []
+
+        asyncio.run(scenario())

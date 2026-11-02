@@ -120,7 +120,7 @@ class Container:
         self.temp_dir.activate()
         self.temp_dir.start()
         await self.jobs.start()
-        if load_models:
+        if load_models and not self.settings.load_models_on_demand:
             if background:
                 self._load_task = asyncio.get_running_loop().create_task(self.load_models())
             else:
@@ -135,6 +135,20 @@ class Container:
         await self.jobs.stop()
         if self.temp_dir is not None:
             await self.temp_dir.close()
+
+    async def ensure_models(self) -> None:
+        """Load the models now if they load on demand; a no-op otherwise.
+
+        The waiting request is what keeps a serverless instance running while they load.
+        Concurrent callers share one load, and a failed load is tried again by the next caller.
+        """
+        if not self.settings.load_models_on_demand:
+            return
+        if self.corrector_ready and self.transcriber_ready:
+            return
+        if self._load_task is None or self._load_task.done():
+            self._load_task = asyncio.get_running_loop().create_task(self.load_models())
+        await asyncio.shield(self._load_task)  # a client leaving must not cancel it for the others
 
     async def load_models(self) -> None:
         """Load (and warm up) the models in a worker thread."""
@@ -153,6 +167,7 @@ class Container:
             corrector = corrector_loader(self.settings)
             corrector.warmup()
             self.corrector = corrector
+            self.load_errors.pop("corrector", None)
             MODEL_READY.labels(component="corrector").set(1)
             log.info("corrector_ready", backend=corrector.backend_name)
         except Exception as exc:
@@ -161,6 +176,7 @@ class Container:
         try:
             transcriber = transcriber_loader(self.settings)
             self.transcriber = transcriber
+            self.load_errors.pop("stt", None)
             MODEL_READY.labels(component="stt").set(1)
             log.info("stt_ready", engine=transcriber.engine_name)
         except Exception as exc:

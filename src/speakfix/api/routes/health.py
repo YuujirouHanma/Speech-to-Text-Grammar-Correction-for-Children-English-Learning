@@ -7,8 +7,9 @@ from fastapi.responses import JSONResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from speakfix import __version__
-from speakfix.api.deps import ContainerDep
-from speakfix.api.schemas import ComponentStatus, InfoResponse, ReadinessResponse
+from speakfix.api.deps import ContainerDep, PrincipalDep
+from speakfix.api.schemas import ComponentStatus, ErrorResponse, InfoResponse, ReadinessResponse
+from speakfix.domain.errors import ModelNotReadyError
 
 router = APIRouter(tags=["ops"])
 
@@ -95,5 +96,19 @@ async def info(container: ContainerDep) -> InfoResponse:
             "demo_mode": s.demo_mode,
             "feedback_language": s.feedback_language,
             "api_key_required": s.auth_enabled,
+            "load_models_on_demand": s.load_models_on_demand,
         },
     )
+
+
+@router.post(
+    "/v1/warmup",
+    responses={code: {"model": ErrorResponse} for code in (401, 429, 503)},
+    summary="Load the models now",
+)
+async def warmup(_principal: PrincipalDep, container: ContainerDep) -> dict[str, bool]:
+    """With on-demand loading, lets a page load the models while its visitor reads it."""
+    await container.ensure_models()
+    if not container.ready:
+        raise ModelNotReadyError("Models are still loading.")
+    return {"ready": True}
