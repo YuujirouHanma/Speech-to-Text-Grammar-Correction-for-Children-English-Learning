@@ -2,13 +2,13 @@ from pathlib import Path
 
 import pytest
 
-from speakfix.config import CorrectorBackend, Settings, SttEngine
-from speakfix.logs import _redact
+from speech_grammar.config import CorrectorBackend, Settings, SttEngine
+from speech_grammar.logs import _redact
 
 
 def test_csv_env_parsing(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SPEAKFIX_API_KEYS", "alpha, beta")
-    monkeypatch.setenv("SPEAKFIX_CORS_ORIGINS", "https://a.example,https://b.example")
+    monkeypatch.setenv("SPEECH_GRAMMAR_API_KEYS", "alpha, beta")
+    monkeypatch.setenv("SPEECH_GRAMMAR_CORS_ORIGINS", "https://a.example,https://b.example")
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
     assert [k.get_secret_value() for k in settings.api_keys] == ["alpha", "beta"]
     assert settings.cors_origins == ["https://a.example", "https://b.example"]
@@ -59,7 +59,7 @@ def test_log_redaction_hides_child_data() -> None:
 def test_tracebacks_never_include_local_variables(capsys: pytest.CaptureFixture[str]) -> None:
     import logging
 
-    from speakfix.logs import configure_logging, get_logger
+    from speech_grammar.logs import configure_logging, get_logger
 
     configure_logging("INFO", json_logs=True)
     child_sentence = "my name is Budi and I live on Jalan Mawar 5"  # noqa: F841 - must not leak

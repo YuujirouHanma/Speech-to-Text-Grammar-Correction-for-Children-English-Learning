@@ -12,13 +12,13 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from speakfix.api.app import create_app
-from speakfix.config import Settings
-from speakfix.domain.errors import ResourceExhaustedError
-from speakfix.domain.models import Transcript, TranscriptSegment
-from speakfix.services.container import Container
-from speakfix.services.corrector import CorrectionConfig, GrammarCorrector
-from speakfix.services.transcriber import Transcriber
+from speech_grammar.api.app import create_app
+from speech_grammar.config import Settings
+from speech_grammar.domain.errors import ResourceExhaustedError
+from speech_grammar.domain.models import Transcript, TranscriptSegment
+from speech_grammar.services.container import Container
+from speech_grammar.services.corrector import CorrectionConfig, GrammarCorrector
+from speech_grammar.services.transcriber import Transcriber
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODELS_DIR = PROJECT_ROOT / "models"

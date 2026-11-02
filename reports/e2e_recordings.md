@@ -16,14 +16,14 @@ the expected sentences: `FP/WHISPER DENGAN INPUT AUDIO.docx`.
 | Median / slowest server time | 458 / 1051 ms | 1347 / 1688 ms |
 
 Word distance to the Expected Output over the team's 10 sentences (159 words; lower is
-better): uncorrected input 43, old results 17, SpeakFix 20 (GPU) and
+better): uncorrected input 43, old results 17, Speech Grammar 20 (GPU) and
 17 (CPU). Both pipelines hear the recording first, so STT errors count here. Ten sentences
 with one reference each are too few to rank the two systems: on this sample they are close, and the
 held-out test sets in `gec_eval.json` are the better measure.
 
 ## Team's 10 sentences (public demo)
 
-| Spoken | Expected Output (team document) | Old result (team document) | SpeakFix | Word distance old / new |
+| Spoken | Expected Output (team document) | Old result (team document) | Speech Grammar | Word distance old / new |
 |---|---|---|---|---|
 | Although she studied hardly for the exam but she didn’t passed and she was very disappointing about the results. | Although she studied hard for the exam, she didn't pass and she was very disappointed with the results. | Although she studied hardly for the exam but she didn't pass and she was very disappointed about the results . | Although she studied hardly for the exam, she didn't pass and was very disappointed about the results. | 3 / 3 |
 | The peoples who lives in the city has many problem with pollution and traffics that is getting more worst. | The people who live in the city have many problems with pollution and traffic that is getting worse. | The people who live in the city have many problems with pollution and traffic that is getting worse. | The people who live in the city have many problems with pollution and traffic that is getting worse. | 0 / 0 |

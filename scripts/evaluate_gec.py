@@ -3,7 +3,7 @@
 Systems compared:
 * ``legacy``   - the original notebook decoding (``max_length=20``, one prompt,
                  no sentence handling): reproduces the report's setup.
-* ``speakfix`` - the production pipeline (:class:`GrammarCorrector`).
+* ``speech_grammar`` - the production pipeline (:class:`GrammarCorrector`).
 
 Metrics (all on detokenized text, so JFLEG's ``word .`` style is not penalised):
 * ``bleu_1ref``  corpus BLEU against the first reference (what the report used),
@@ -34,10 +34,10 @@ from pathlib import Path
 import pandas as pd
 import sacrebleu
 
-from speakfix.config import InputStyle
-from speakfix.domain.ports import Seq2SeqBackend
-from speakfix.services.corrector import CorrectionConfig, GrammarCorrector
-from speakfix.text.normalize import detokenize, normalize_text
+from speech_grammar.config import InputStyle
+from speech_grammar.domain.ports import Seq2SeqBackend
+from speech_grammar.services.corrector import CorrectionConfig, GrammarCorrector
+from speech_grammar.text.normalize import detokenize, normalize_text
 from train_t5 import clean, key
 
 
@@ -80,7 +80,7 @@ def legacy_system(backend: Seq2SeqBackend) -> Callable[[Sequence[str]], list[str
     return run
 
 
-def speakfix_system(
+def speech_grammar_system(
     backend: Seq2SeqBackend,
     style: InputStyle,
     beams: int = 5,
@@ -132,16 +132,16 @@ def score(
 def build_backend(
     kind: str, model_dir: Path, device: str, compute_type: str = "auto"
 ) -> Seq2SeqBackend:
-    from speakfix.config import Device
-    from speakfix.inference.devices import resolve_device, resolve_t5_compute_type
+    from speech_grammar.config import Device
+    from speech_grammar.inference.devices import resolve_device, resolve_t5_compute_type
 
     device = resolve_device(Device(device))  # also exposes pip-installed CUDA libraries
     if kind == "ctranslate2":
-        from speakfix.inference.t5_ct2 import Ct2Seq2SeqBackend
+        from speech_grammar.inference.t5_ct2 import Ct2Seq2SeqBackend
 
         compute_type = resolve_t5_compute_type(compute_type, device)
         return Ct2Seq2SeqBackend(model_dir, device=device, compute_type=compute_type)
-    from speakfix.inference.t5_torch import TorchSeq2SeqBackend
+    from speech_grammar.inference.t5_torch import TorchSeq2SeqBackend
 
     return TorchSeq2SeqBackend(model_dir, device=device)
 
@@ -161,7 +161,7 @@ def main() -> None:
     parser.add_argument(
         "--kaggle-split", type=Path, help="split.json from train_t5.py (use only its test part)"
     )
-    parser.add_argument("--systems", nargs="+", default=["legacy", "speakfix"])
+    parser.add_argument("--systems", nargs="+", default=["legacy", "speech_grammar"])
     parser.add_argument("--limit", type=int)
     parser.add_argument("--num-beams", type=int, default=5, help="Beam width (1 = greedy)")
     parser.add_argument("--label", default="baseline")
@@ -169,7 +169,7 @@ def main() -> None:
         "--min-margin",
         type=float,
         default=-math.inf,
-        help="confidence margin of the speakfix system (the service default is in config.py)",
+        help="confidence margin of the speech_grammar system (the service default is in config.py)",
     )
     parser.add_argument(
         "--no-punctuation-feedback",
@@ -206,16 +206,16 @@ def main() -> None:
     for name in args.systems:
         if name == "legacy":
             systems[name] = legacy_system(backend)
-        elif name == "speakfix":
-            systems[name] = speakfix_system(
+        elif name == "speech_grammar":
+            systems[name] = speech_grammar_system(
                 backend,
                 InputStyle.RAW,
                 args.num_beams,
                 min_margin=args.min_margin,
                 punctuation_feedback=args.punctuation_feedback,
             )
-        elif name == "speakfix-jfleg":
-            systems[name] = speakfix_system(backend, InputStyle.JFLEG)
+        elif name == "speech-grammar-jfleg":
+            systems[name] = speech_grammar_system(backend, InputStyle.JFLEG)
 
     results: dict[str, dict[str, dict[str, float]]] = {}
     examples: dict[str, list[dict[str, str]]] = {}

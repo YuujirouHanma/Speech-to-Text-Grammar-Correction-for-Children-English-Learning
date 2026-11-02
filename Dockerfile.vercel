@@ -20,7 +20,7 @@ RUN pip install --upgrade pip wheel \
  && find /opt/venv -name "__pycache__" -type d -prune -exec rm -rf {} +
 
 # The Whisper revision is the one the STT evaluation in the README ran on.
-ARG T5_MODEL_REPO=Jagardo/speakfix-t5-gec-v2-ct2
+ARG T5_MODEL_REPO=Jagardo/speech-grammar-t5-gec-v2-ct2
 ARG WHISPER_REVISION=3d3d5dee26484f91867d81cb899cfcf72b96be6c
 RUN python -c "from huggingface_hub import snapshot_download as get; \
 get('${T5_MODEL_REPO}', local_dir='/models/t5-gec-v2-ct2'); \
@@ -40,18 +40,18 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     HF_HUB_OFFLINE=1 \
     OMP_NUM_THREADS=1 \
     FORWARDED_ALLOW_IPS=* \
-    SPEAKFIX_ENVIRONMENT=prod \
-    SPEAKFIX_MODELS_DIR=/models \
-    SPEAKFIX_DEVICE=cpu \
-    SPEAKFIX_CORRECTOR_BACKEND=ctranslate2 \
-    SPEAKFIX_CORRECTOR_FALLBACK_BACKEND=none \
-    SPEAKFIX_WHISPER_MODEL=base.en \
-    SPEAKFIX_WHISPER_CPU_THREADS=1 \
-    SPEAKFIX_TEMP_DIR=/tmp/speakfix \
-    SPEAKFIX_LOAD_MODELS_ON_DEMAND=true \
-    SPEAKFIX_DEMO_MODE=true \
-    SPEAKFIX_MAX_UPLOAD_MB=4 \
-    SPEAKFIX_RATE_LIMIT_PER_MINUTE=30
+    SPEECH_GRAMMAR_ENVIRONMENT=prod \
+    SPEECH_GRAMMAR_MODELS_DIR=/models \
+    SPEECH_GRAMMAR_DEVICE=cpu \
+    SPEECH_GRAMMAR_CORRECTOR_BACKEND=ctranslate2 \
+    SPEECH_GRAMMAR_CORRECTOR_FALLBACK_BACKEND=none \
+    SPEECH_GRAMMAR_WHISPER_MODEL=base.en \
+    SPEECH_GRAMMAR_WHISPER_CPU_THREADS=1 \
+    SPEECH_GRAMMAR_TEMP_DIR=/tmp/speech_grammar \
+    SPEECH_GRAMMAR_LOAD_MODELS_ON_DEMAND=true \
+    SPEECH_GRAMMAR_DEMO_MODE=true \
+    SPEECH_GRAMMAR_MAX_UPLOAD_MB=4 \
+    SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE=30
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /models /models
@@ -59,4 +59,4 @@ WORKDIR /home/app
 USER app
 EXPOSE 8000
 
-CMD ["sh", "-c", "SPEAKFIX_PORT=${PORT:-8000} exec speakfix"]
+CMD ["sh", "-c", "SPEECH_GRAMMAR_PORT=${PORT:-8000} exec speech-grammar"]

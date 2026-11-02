@@ -8,8 +8,8 @@ from typing import Any
 import numpy as np
 import pytest
 
-from speakfix.config import Settings
-from speakfix.domain.errors import (
+from speech_grammar.config import Settings
+from speech_grammar.domain.errors import (
     InferenceError,
     JobNotFoundError,
     ModelNotReadyError,
@@ -17,13 +17,13 @@ from speakfix.domain.errors import (
     ResourceExhaustedError,
     ServerBusyError,
 )
-from speakfix.services.analysis import AnalysisService
-from speakfix.services.container import Container
-from speakfix.services.corrector import GrammarCorrector
-from speakfix.services.jobs import JobManager, JobState
-from speakfix.services.privacy import PrivateTempDir, ResultCipher
-from speakfix.services.ratelimit import TokenBucketLimiter
-from speakfix.services.transcriber import Transcriber
+from speech_grammar.services.analysis import AnalysisService
+from speech_grammar.services.container import Container
+from speech_grammar.services.corrector import GrammarCorrector
+from speech_grammar.services.jobs import JobManager, JobState
+from speech_grammar.services.privacy import PrivateTempDir, ResultCipher
+from speech_grammar.services.ratelimit import TokenBucketLimiter
+from speech_grammar.services.transcriber import Transcriber
 from tests.conftest import FakeBackend, FakeSTT, make_container, make_settings, make_wav
 
 
@@ -234,7 +234,7 @@ class TestContainerBackpressure:
         asyncio.run(scenario())
 
     def test_timeout(self) -> None:
-        from speakfix.domain.errors import InferenceTimeoutError
+        from speech_grammar.domain.errors import InferenceTimeoutError
 
         async def scenario() -> None:
             container = make_container(make_settings(request_timeout_seconds=0.05))
@@ -263,8 +263,8 @@ class TestWatchdog:
 
 
 def test_edit_descriptions_follow_the_feedback_language() -> None:
-    from speakfix.api.schemas import CorrectionOut
-    from speakfix.domain.models import Correction, Edit
+    from speech_grammar.api.schemas import CorrectionOut
+    from speech_grammar.domain.models import Correction, Edit
 
     edit = Edit("replace", "is", "are", 5, 7, error_type="R:VERB:SVA")
     correction = Correction("They is happy", "They are happy", (edit,), 1, "fake")

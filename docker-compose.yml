@@ -1,4 +1,4 @@
-# SpeakFix stack.
+# Speech Grammar stack.
 #   CPU API only:            docker compose up -d --build
 #   GPU API:                 docker compose --profile gpu up -d --build api-gpu
 #   + Prometheus/Grafana:    docker compose --profile monitoring up -d
@@ -16,14 +16,14 @@ x-hardening: &hardening
   restart: unless-stopped
 
 x-api-env: &api-env
-  SPEAKFIX_ENVIRONMENT: prod
-  SPEAKFIX_LOG_JSON: "true"
-  SPEAKFIX_API_KEYS: ${SPEAKFIX_API_KEYS:-}
-  SPEAKFIX_CORS_ORIGINS: ${SPEAKFIX_CORS_ORIGINS:-}
-  SPEAKFIX_RATE_LIMIT_PER_MINUTE: ${SPEAKFIX_RATE_LIMIT_PER_MINUTE:-60}
-  SPEAKFIX_REQUIRE_CONSENT: ${SPEAKFIX_REQUIRE_CONSENT:-true}
-  SPEAKFIX_ALLOW_CLOUD_STT: "false"
-  SPEAKFIX_T5_MODEL_NAME: ${SPEAKFIX_T5_MODEL_NAME:-t5-gec-v2}
+  SPEECH_GRAMMAR_ENVIRONMENT: prod
+  SPEECH_GRAMMAR_LOG_JSON: "true"
+  SPEECH_GRAMMAR_API_KEYS: ${SPEECH_GRAMMAR_API_KEYS:-}
+  SPEECH_GRAMMAR_CORS_ORIGINS: ${SPEECH_GRAMMAR_CORS_ORIGINS:-}
+  SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE: ${SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE:-60}
+  SPEECH_GRAMMAR_REQUIRE_CONSENT: ${SPEECH_GRAMMAR_REQUIRE_CONSENT:-true}
+  SPEECH_GRAMMAR_ALLOW_CLOUD_STT: "false"
+  SPEECH_GRAMMAR_T5_MODEL_NAME: ${SPEECH_GRAMMAR_T5_MODEL_NAME:-t5-gec-v2}
   FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
 
 services:
@@ -32,12 +32,12 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    image: speakfix:cpu
+    image: speech-grammar:cpu
     environment:
       <<: *api-env
-      SPEAKFIX_WHISPER_MODEL: ${SPEAKFIX_WHISPER_MODEL:-base.en}
+      SPEECH_GRAMMAR_WHISPER_MODEL: ${SPEECH_GRAMMAR_WHISPER_MODEL:-base.en}
     ports:
-      - "${SPEAKFIX_PORT:-8000}:8000"
+      - "${SPEECH_GRAMMAR_PORT:-8000}:8000"
     volumes:
       - ./models:/models:ro
     deploy:
@@ -52,12 +52,12 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.gpu
-    image: speakfix:gpu
+    image: speech-grammar:gpu
     environment:
       <<: *api-env
-      SPEAKFIX_WHISPER_MODEL: ${SPEAKFIX_WHISPER_MODEL:-small.en}
+      SPEECH_GRAMMAR_WHISPER_MODEL: ${SPEECH_GRAMMAR_WHISPER_MODEL:-small.en}
     ports:
-      - "${SPEAKFIX_GPU_PORT:-8001}:8000"
+      - "${SPEECH_GRAMMAR_GPU_PORT:-8001}:8000"
     volumes:
       - ./models:/models:ro
     deploy:

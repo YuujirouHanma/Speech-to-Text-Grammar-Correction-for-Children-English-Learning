@@ -17,27 +17,27 @@ from pathlib import Path
 import pandas as pd
 import psutil
 
-from speakfix.config import Device, Settings
-from speakfix.domain.ports import Seq2SeqBackend
-from speakfix.inference.devices import (
+from speech_grammar.config import Device, Settings
+from speech_grammar.domain.ports import Seq2SeqBackend
+from speech_grammar.inference.devices import (
     resolve_device,
     resolve_t5_compute_type,
     resolve_whisper_compute_type,
 )
-from speakfix.inference.factory import build_edit_classifier
-from speakfix.services.corrector import CorrectionConfig, GrammarCorrector
-from speakfix.text.normalize import detokenize
+from speech_grammar.inference.factory import build_edit_classifier
+from speech_grammar.services.corrector import CorrectionConfig, GrammarCorrector
+from speech_grammar.text.normalize import detokenize
 
 
 def load_backend(spec: str, models_dir: Path, t5_name: str) -> Seq2SeqBackend:
     runtime, _, device = spec.partition("-")
     device = resolve_device(Device(device))  # also exposes pip-installed CUDA libraries
     if runtime == "ct2":
-        from speakfix.inference.t5_ct2 import Ct2Seq2SeqBackend
+        from speech_grammar.inference.t5_ct2 import Ct2Seq2SeqBackend
 
         compute = resolve_t5_compute_type("auto", device)
         return Ct2Seq2SeqBackend(models_dir / f"{t5_name}-ct2", device=device, compute_type=compute)
-    from speakfix.inference.t5_torch import TorchSeq2SeqBackend
+    from speech_grammar.inference.t5_torch import TorchSeq2SeqBackend
 
     return TorchSeq2SeqBackend(models_dir / t5_name, device=device)
 
@@ -86,10 +86,10 @@ def bench_corrector(
 
 
 def bench_whisper(name: str, audio_path: Path, models_dir: Path, device: str) -> dict[str, str]:
-    from speakfix.audio.decode import TARGET_SAMPLE_RATE, decode_audio
-    from speakfix.audio.preprocess import preprocess
-    from speakfix.inference.factory import resolve_whisper_model
-    from speakfix.inference.whisper_stt import WhisperSpeechToText
+    from speech_grammar.audio.decode import TARGET_SAMPLE_RATE, decode_audio
+    from speech_grammar.audio.preprocess import preprocess
+    from speech_grammar.inference.factory import resolve_whisper_model
+    from speech_grammar.inference.whisper_stt import WhisperSpeechToText
 
     device = resolve_device(Device(device))
     compute_type = resolve_whisper_compute_type("auto", device)

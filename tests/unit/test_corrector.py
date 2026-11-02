@@ -2,9 +2,9 @@ from collections.abc import Sequence
 
 import pytest
 
-from speakfix.config import InputStyle
-from speakfix.domain.errors import InferenceError, InvalidTextError, ResourceExhaustedError
-from speakfix.services.corrector import CorrectionConfig, GrammarCorrector
+from speech_grammar.config import InputStyle
+from speech_grammar.domain.errors import InferenceError, InvalidTextError, ResourceExhaustedError
+from speech_grammar.services.corrector import CorrectionConfig, GrammarCorrector
 from tests.conftest import FakeBackend
 
 

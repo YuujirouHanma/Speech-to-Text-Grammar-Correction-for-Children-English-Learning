@@ -1,8 +1,10 @@
-# SpeakFix
+# Speech to Text Grammar Correction for Children English Learning
 
 Layanan **transkripsi ucapan + koreksi grammar bahasa Inggris** untuk memantau pembelajaran anak.
 Suara anak ditranskripsi oleh **Whisper** (lokal), lalu dikoreksi oleh model **T5** hasil fine-tuning.
 Setiap respons berisi daftar perubahan per kata (*edits*) yang bisa langsung ditampilkan sebagai umpan balik.
+
+Di kode dan dokumen ini, project ini disingkat **Speech Grammar** (paket Python `speech_grammar`).
 
 Ini adalah versi produksi dari project riset tim (`T5PRETRAINASLI.ipynb`, `WHISPER.ipynb`, `GEMINI2.0.py`). File
 riset, dataset, dan bobot model tidak ikut di repo ini. Path seperti `..\eval.csv` dan `..\saved_model` pada perintah
@@ -13,10 +15,10 @@ di bawah adalah lokasinya di laptop pengembang.
 ## Hasil: sebelum vs sesudah
 
 Semua angka di bawah diukur ulang pada 1–2 November 2026 di laptop pengembang (Intel i7-13620H + RTX 4070
-Laptop). Kolom SpeakFix memakai konfigurasi default: model v2 dengan filter keyakinan 2,5, di CPU. Script-nya
+Laptop). Kolom Speech Grammar memakai konfigurasi default: model v2 dengan filter keyakinan 2,5, di CPU. Script-nya
 ada di repo ini (lihat [Evaluasi](#evaluasi-benchmark-dan-training)), dan laporan mentahnya ada di `reports/`.
 
-| Aspek | Project awal | SpeakFix |
+| Aspek | Project awal | Speech Grammar |
 |---|---|---|
 | JFLEG test (747 kalimat), BLEU 4 referensi | 0,653 | **0,871** |
 | JFLEG test, GLEU (metrik resmi JFLEG) | 0,395 | **0,545** |
@@ -111,15 +113,15 @@ Alur satu request `/v1/audio/analyze`:
 ## Struktur folder
 
 ```
-speakfix/
-├── src/speakfix/
+speech-grammar/
+├── src/speech_grammar/
 │   ├── api/          app factory, routes, schemas, middleware, deps, static UI
 │   ├── services/     analysis, corrector, transcriber, jobs, privacy, ratelimit, container
 │   ├── inference/    t5_ct2, t5_torch, whisper_stt, cloud_stt, devices, factory
 │   ├── audio/        validation, decode, preprocess, encode
 │   ├── text/         normalize, edits
 │   ├── domain/       models, errors, ports
-│   ├── config.py     semua pengaturan (env SPEAKFIX_*)
+│   ├── config.py     semua pengaturan (env SPEECH_GRAMMAR_*)
 │   ├── logs.py       structlog + redaksi data anak
 │   └── metrics.py    metrik Prometheus
 ├── scripts/          prepare_models, train_t5, evaluate_gec (+ gec_metrics), calibrate_correction, evaluate_stt,
@@ -142,7 +144,8 @@ Prasyarat: Python 3.12 untuk versi terkunci (`constraints.txt`; Python 3.10–3.
 GPU tidak wajib.
 
 ```powershell
-cd speakfix
+git clone https://github.com/YuujirouHanma/Speech-to-Text-Grammar-Correction-for-Children-English-Learning.git speech-grammar
+cd speech-grammar
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1                 # Linux/macOS: source .venv/bin/activate
 pip install -c constraints.txt -e ".[dev,torch,errant]"   # [torch]: konversi/training/fallback
@@ -156,20 +159,20 @@ python scripts/prepare_models.py whisper --whisper small.en                # dip
 
 # 3) Jalankan
 $env:HF_HUB_OFFLINE = "1"
-python -m speakfix
+python -m speech_grammar
 ```
 
 Buka **http://localhost:8000** untuk UI demo (rekam, upload, atau ketik) atau **/docs** untuk
 dokumentasi API interaktif. Model dimuat di background: `/healthz` langsung merespons 200, sedangkan
 `/readyz` baru merespons 200 setelah model siap.
 
-Kalau model v2 belum dibuat, pakai model asli: `$env:SPEAKFIX_T5_MODEL_NAME = "t5-gec"`.
+Kalau model v2 belum dibuat, pakai model asli: `$env:SPEECH_GRAMMAR_T5_MODEL_NAME = "t5-gec"`.
 
-> **GPU**: `SPEAKFIX_DEVICE=auto` hanya memilih GPU jika driver terdeteksi **dan** library CUDA
+> **GPU**: `SPEECH_GRAMMAR_DEVICE=auto` hanya memilih GPU jika driver terdeteksi **dan** library CUDA
 > (cuBLAS 12 + cuDNN 9) bisa dimuat. Jika tidak, CPU dipakai. Pemeriksaan ini penting karena
 > faster-whisper sempat *hang* (bukan error) di Windows tanpa cuBLAS.
 >
-> Di Windows tidak perlu memasang CUDA Toolkit. Jika cuBLAS tidak ada di sistem, SpeakFix memakai
+> Di Windows tidak perlu memasang CUDA Toolkit. Jika cuBLAS tidak ada di sistem, Speech Grammar memakai
 > salinan yang dibawa wheel PyTorch CUDA (`torch/lib`) atau wheel `nvidia-cublas-cu12` dan
 > `nvidia-cudnn-cu12`, lalu menambahkan foldernya ke `PATH` proses. Wheel PyTorch dari PyPI hanya
 > versi CPU, jadi pasang versi CUDA:
@@ -228,7 +231,7 @@ Contoh respons `/v1/text/correct`:
 }
 ```
 
-`description` memakai Bahasa Indonesia secara default (`SPEAKFIX_FEEDBACK_LANGUAGE=en` untuk Inggris).
+`description` memakai Bahasa Indonesia secara default (`SPEECH_GRAMMAR_FEEDBACK_LANGUAGE=en` untuk Inggris).
 Contoh di atas adalah teks ketikan, jadi titik yang hilang ikut dikoreksi. Untuk rekaman suara, perubahan
 yang hanya menyangkut tanda baca atau huruf kapital tidak dilaporkan, karena tanda baca transkrip berasal
 dari Whisper, bukan dari anak.
@@ -257,32 +260,32 @@ Warning yang mungkin muncul di respons:
 
 ## Konfigurasi
 
-Semua pengaturan dibaca dari environment variable berprefix `SPEAKFIX_` atau dari file `.env`
-(lihat `.env.example`). Daftar lengkapnya ada di `src/speakfix/config.py`. Yang terpenting:
+Semua pengaturan dibaca dari environment variable berprefix `SPEECH_GRAMMAR_` atau dari file `.env`
+(lihat `.env.example`). Daftar lengkapnya ada di `src/speech_grammar/config.py`. Yang terpenting:
 
 | Variabel | Default | Keterangan |
 |---|---|---|
-| `SPEAKFIX_API_KEYS` | *(kosong)* | Daftar key dipisah koma. Kosong berarti tanpa autentikasi (hanya untuk lokal). |
-| `SPEAKFIX_REQUIRE_CONSENT` | `true` | Endpoint audio mewajibkan `consent=true`. |
-| `SPEAKFIX_RATE_LIMIT_PER_MINUTE` | `60` | Batas request per key/IP (`0` = mati). Satu kelas di satu Wi-Fi berbagi satu IP, jadi demo publik memakai `600`. |
-| `SPEAKFIX_CORS_ORIGINS` | *(kosong)* | Origin browser yang diizinkan. |
-| `SPEAKFIX_T5_MODEL_NAME` | `t5-gec-v2` | Memakai `models/<nama>` dan `models/<nama>-ct2`. |
-| `SPEAKFIX_CORRECTOR_BACKEND` | `ctranslate2` | `ctranslate2` atau `torch`. |
-| `SPEAKFIX_CORRECTOR_FALLBACK_BACKEND` | `torch` | Dipakai bila backend utama gagal/OOM (`none` = mati). |
-| `SPEAKFIX_DEVICE` | `auto` | `cpu`, `cuda`, atau `auto`. |
-| `SPEAKFIX_WHISPER_MODEL` | `auto` | `small.en` di GPU jika sudah disiapkan, selain itu `base.en` (lihat Evaluasi speech-to-text). Bisa juga ukuran lain atau path lokal. |
-| `SPEAKFIX_WHISPER_VERBATIM_PROMPT` | `true` | Menjaga kesalahan grammar tetap tertulis. |
-| `SPEAKFIX_AUDIO_DENOISE` | `false` | Spectral gating, hanya untuk ruangan bising. |
-| `SPEAKFIX_MAX_UPLOAD_MB` / `SPEAKFIX_MAX_AUDIO_SECONDS` | `10` / `60` | Batas input. |
-| `SPEAKFIX_INFERENCE_WORKERS` | `1` | Inferensi paralel. Gunakan `2` di GPU (lihat Uji beban). |
-| `SPEAKFIX_MAX_PENDING_REQUESTS` | `16` | Lebih dari ini akan dijawab 503 (backpressure). Demo publik memakai `32`, supaya satu kelas bisa menekan tombol bersamaan. |
-| `SPEAKFIX_JOB_TTL_SECONDS` | `600` | Masa hidup hasil job async. |
-| `SPEAKFIX_ALLOW_CLOUD_STT` | `false` | Mengizinkan Gemini/Deepgram (baca bagian Privasi). |
-| `SPEAKFIX_MIN_CORRECTION_MARGIN` | `2.5` | Saran hanya ditampilkan jika model cukup yakin (lihat *Mengurangi koreksi keliru*). `1.0` = lebih banyak saran tetapi lebih banyak koreksi keliru; `-inf` = filter mati. |
-| `SPEAKFIX_PUNCTUATION_FEEDBACK` | `true` | Umpan balik tanda baca dan huruf kapital untuk teks ketikan. Transkrip suara tidak pernah mendapatkannya. |
-| `SPEAKFIX_FEEDBACK_LANGUAGE` | `id` | Bahasa deskripsi kesalahan di API (`id` atau `en`). |
-| `SPEAKFIX_DEMO_MODE` | `false` | Demo publik: UI meminta suara orang dewasa saja. |
-| `SPEAKFIX_LOAD_MODELS_ON_DEMAND` | `false` | Memuat model saat dibutuhkan, untuk host serverless (lihat Vercel). |
+| `SPEECH_GRAMMAR_API_KEYS` | *(kosong)* | Daftar key dipisah koma. Kosong berarti tanpa autentikasi (hanya untuk lokal). |
+| `SPEECH_GRAMMAR_REQUIRE_CONSENT` | `true` | Endpoint audio mewajibkan `consent=true`. |
+| `SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE` | `60` | Batas request per key/IP (`0` = mati). Satu kelas di satu Wi-Fi berbagi satu IP, jadi demo publik memakai `600`. |
+| `SPEECH_GRAMMAR_CORS_ORIGINS` | *(kosong)* | Origin browser yang diizinkan. |
+| `SPEECH_GRAMMAR_T5_MODEL_NAME` | `t5-gec-v2` | Memakai `models/<nama>` dan `models/<nama>-ct2`. |
+| `SPEECH_GRAMMAR_CORRECTOR_BACKEND` | `ctranslate2` | `ctranslate2` atau `torch`. |
+| `SPEECH_GRAMMAR_CORRECTOR_FALLBACK_BACKEND` | `torch` | Dipakai bila backend utama gagal/OOM (`none` = mati). |
+| `SPEECH_GRAMMAR_DEVICE` | `auto` | `cpu`, `cuda`, atau `auto`. |
+| `SPEECH_GRAMMAR_WHISPER_MODEL` | `auto` | `small.en` di GPU jika sudah disiapkan, selain itu `base.en` (lihat Evaluasi speech-to-text). Bisa juga ukuran lain atau path lokal. |
+| `SPEECH_GRAMMAR_WHISPER_VERBATIM_PROMPT` | `true` | Menjaga kesalahan grammar tetap tertulis. |
+| `SPEECH_GRAMMAR_AUDIO_DENOISE` | `false` | Spectral gating, hanya untuk ruangan bising. |
+| `SPEECH_GRAMMAR_MAX_UPLOAD_MB` / `SPEECH_GRAMMAR_MAX_AUDIO_SECONDS` | `10` / `60` | Batas input. |
+| `SPEECH_GRAMMAR_INFERENCE_WORKERS` | `1` | Inferensi paralel. Gunakan `2` di GPU (lihat Uji beban). |
+| `SPEECH_GRAMMAR_MAX_PENDING_REQUESTS` | `16` | Lebih dari ini akan dijawab 503 (backpressure). Demo publik memakai `32`, supaya satu kelas bisa menekan tombol bersamaan. |
+| `SPEECH_GRAMMAR_JOB_TTL_SECONDS` | `600` | Masa hidup hasil job async. |
+| `SPEECH_GRAMMAR_ALLOW_CLOUD_STT` | `false` | Mengizinkan Gemini/Deepgram (baca bagian Privasi). |
+| `SPEECH_GRAMMAR_MIN_CORRECTION_MARGIN` | `2.5` | Saran hanya ditampilkan jika model cukup yakin (lihat *Mengurangi koreksi keliru*). `1.0` = lebih banyak saran tetapi lebih banyak koreksi keliru; `-inf` = filter mati. |
+| `SPEECH_GRAMMAR_PUNCTUATION_FEEDBACK` | `true` | Umpan balik tanda baca dan huruf kapital untuk teks ketikan. Transkrip suara tidak pernah mendapatkannya. |
+| `SPEECH_GRAMMAR_FEEDBACK_LANGUAGE` | `id` | Bahasa deskripsi kesalahan di API (`id` atau `en`). |
+| `SPEECH_GRAMMAR_DEMO_MODE` | `false` | Demo publik: UI meminta suara orang dewasa saja. |
+| `SPEECH_GRAMMAR_LOAD_MODELS_ON_DEMAND` | `false` | Memuat model saat dibutuhkan, untuk host serverless (lihat Vercel). |
 
 ---
 
@@ -317,7 +320,7 @@ Hasil v2: 4.309 pasangan latih, eval loss terbaik 0,307 (epoch 2), 186 detik di 
 ```powershell
 python scripts/evaluate_gec.py --model models/t5-gec-v2-ct2 --jfleg ..\eval.csv `
     --kaggle "..\..\FP\Grammar Correction.csv" --kaggle-split models/t5-gec-v2/split.json `
-    --systems speakfix --min-margin 2.5 --correct-sentences --gec-metrics --label v2-margin2.5-text
+    --systems speech_grammar --min-margin 2.5 --correct-sentences --gec-metrics --label v2-margin2.5-text
 ```
 
 Tanpa `--min-margin`, filter keyakinan mati (label `v2-baseline`). `--systems legacy` menjalankan pipeline
@@ -327,13 +330,13 @@ notebook lama pada model yang sama. Semua hasil, termasuk 25 contoh output per d
 | Sistem | Data | BLEU 1-ref | BLEU 4-ref | Exact match | Tidak diubah |
 |---|---|---|---|---|---|
 | Pipeline lama (notebook), model asli | JFLEG test (747) | 0,519 | 0,653 | 22,5% | 20,6% |
-| SpeakFix tanpa filter, model asli | JFLEG test | 0,711 | 0,856 | 33,6% | 35,7% |
-| SpeakFix tanpa filter, model v2 | JFLEG test | 0,727 | 0,875 | 36,4% | 25,8% |
-| **SpeakFix default (v2 + filter 2,5)** | JFLEG test | **0,723** | **0,871** | **35,7%** | 48,3% |
+| Speech Grammar tanpa filter, model asli | JFLEG test | 0,711 | 0,856 | 33,6% | 35,7% |
+| Speech Grammar tanpa filter, model v2 | JFLEG test | 0,727 | 0,875 | 36,4% | 25,8% |
+| **Speech Grammar default (v2 + filter 2,5)** | JFLEG test | **0,723** | **0,871** | **35,7%** | 48,3% |
 | Pipeline lama, model asli | Kaggle held-out (302) | 0,688 | – | 23,2% | 58,0% |
-| SpeakFix tanpa filter, model asli | Kaggle held-out | 0,685 | – | 24,5% | 59,9% |
-| SpeakFix tanpa filter, model v2 | Kaggle held-out | 0,815 | – | 53,3% | 23,5% |
-| **SpeakFix default (v2 + filter 2,5)** | Kaggle held-out | **0,757** | – | **40,7%** | 46,4% |
+| Speech Grammar tanpa filter, model asli | Kaggle held-out | 0,685 | – | 24,5% | 59,9% |
+| Speech Grammar tanpa filter, model v2 | Kaggle held-out | 0,815 | – | 53,3% | 23,5% |
+| **Speech Grammar default (v2 + filter 2,5)** | Kaggle held-out | **0,757** | – | **40,7%** | 46,4% |
 
 Cara membaca tabel:
 
@@ -357,9 +360,9 @@ Pada output yang sama, hasilnya identik dengan skrip resmi `gleu.py` (repo keisk
 |---|---|---|---|---|
 | Tanpa koreksi (output = input) | 0,407 | – / 0 / 0 | 0,315 | 0 |
 | Pipeline lama (notebook), model asli | 0,395 | 0,473 / 0,321 / 0,432 | 0,491 | 0,473 |
-| SpeakFix tanpa filter, model asli | 0,527 | 0,714 / 0,387 / 0,611 | 0,485 | 0,506 |
-| SpeakFix tanpa filter, model v2 | 0,571 | 0,713 / 0,487 / 0,652 | 0,727 | 0,694 |
-| **SpeakFix default (v2 + filter 2,5)** | **0,545** | **0,732** / 0,424 / **0,639** | **0,612** | **0,660** |
+| Speech Grammar tanpa filter, model asli | 0,527 | 0,714 / 0,387 / 0,611 | 0,485 | 0,506 |
+| Speech Grammar tanpa filter, model v2 | 0,571 | 0,713 / 0,487 / 0,652 | 0,727 | 0,694 |
+| **Speech Grammar default (v2 + filter 2,5)** | **0,545** | **0,732** / 0,424 / **0,639** | **0,612** | **0,660** |
 
 - Teks ditokenisasi dengan spaCy. Baseline "tanpa koreksi" mendapat 0,407, hampir sama dengan baseline
   SOURCE resmi di leaderboard JFLEG (40,54). Jadi tokenisasi ini cukup dekat dengan yang resmi.
@@ -386,7 +389,7 @@ Model v2 yang sama di GPU, tanpa filter (`--device cuda --compute-type ...`, lab
 
 Selisih akurasi ini kecil (1 kalimat Kaggle = 0,33%), tetapi BLEU bfloat16 paling rendah, jadi bfloat16 tidak lagi
 dipakai. float32 lebih cepat, tetapi model T5 memakai ±1,2 GB VRAM, sedangkan `int8_float32` ±0,4 GB. Default GPU tetap
-`int8_float32`; jika VRAM cukup, ganti lewat `SPEAKFIX_CT2_COMPUTE_TYPE=float32`. Hasil CPU dan GPU tidak identik karena
+`int8_float32`; jika VRAM cukup, ganti lewat `SPEECH_GRAMMAR_CT2_COMPUTE_TYPE=float32`. Hasil CPU dan GPU tidak identik karena
 pembulatan presisi berbeda.
 
 #### Mengurangi koreksi keliru (filter keyakinan)
@@ -395,7 +398,7 @@ Tanpa filter, model v2 masih mengubah sebagian kalimat yang **sudah benar**, mis
 volunteers works tirelessly to help the community."* diubah menjadi *"work"*. Untuk anak, saran yang keliru
 lebih merugikan daripada kesalahan yang terlewat. Karena itu ada dua pengaman:
 
-1. **Filter keyakinan** (`SPEAKFIX_MIN_CORRECTION_MARGIN`, default `2.5`). Model memberi skor
+1. **Filter keyakinan** (`SPEECH_GRAMMAR_MIN_CORRECTION_MARGIN`, default `2.5`). Model memberi skor
    log-probabilitas pada saran koreksinya dan pada kalimat asli. Saran hanya ditampilkan jika selisihnya
    mencapai ambang. Skor dihitung dalam satu *forward pass* tambahan, hanya untuk kalimat yang berubah.
    Saran yang ditahan diberi catatan `uncertain_correction_skipped`.
@@ -439,7 +442,7 @@ Cara membaca:
 - Contoh yang tetap dikoreksi: *"My mother cook rice every morning."* (margin 7,8) dan *"I have went to Bali."*
   (margin 4,9). Yang tertahan: *"I am agree with your opinion."* (margin 1,13). Hasil rekaman suara
   ada di [Uji nyata](#uji-nyata-server-sungguhan-laptop).
-- Jika tim lebih memilih lebih banyak saran, pakai `SPEAKFIX_MIN_CORRECTION_MARGIN=1.0`. Jika ingin
+- Jika tim lebih memilih lebih banyak saran, pakai `SPEECH_GRAMMAR_MIN_CORRECTION_MARGIN=1.0`. Jika ingin
   perilaku lama tanpa filter, pakai `-inf`.
 
 ### Evaluasi speech-to-text
@@ -471,7 +474,7 @@ yang sama hasil CPU juga selalu sama. Mengapa model int8 di CPU sesensitif ini b
 1 thread, yang pada base.en kebetulan berada di ujung bawah rentang (47%), jadi jangan membandingkan satu angka
 CPU antar-versi. Rinciannya ada di `reports/stt_eval.md`.
 
-`SPEAKFIX_WHISPER_MODEL=auto` memilih:
+`SPEECH_GRAMMAR_WHISPER_MODEL=auto` memilih:
 
 - **`small.en` di GPU**: hasil terbaik dan stabil, dan tetap cepat (0,16 s untuk audio 5 detik).
 - **`base.en` di CPU**: rentang hasilnya bertumpang tindih dengan `small.en`, tetapi jauh lebih cepat (0,43 s vs 2,58 s).
@@ -528,7 +531,7 @@ unggul untuk input panjang dan untuk Whisper. Detail lengkap ada di `reports/ben
 ### Uji beban (berapa banyak pengguna bersamaan?)
 
 ```powershell
-python -m speakfix                  # di terminal lain, dengan pengaturan yang ingin diuji
+python -m speech_grammar                  # di terminal lain, dengan pengaturan yang ingin diuji
 python scripts/load_test.py --users 30 60 --seconds 60 --think 15 --audio ..\recorded.wav
 python scripts/load_test.py --users 30 --seconds 120 --think 15 --audio ..\recorded.wav --same-ip
 python scripts/load_test.py --users 30 --audio ..\recorded.wav --same-ip --burst   # menekan tombol bersamaan
@@ -590,14 +593,14 @@ memuat isi kalimat. Hasil lengkap ada di `reports/load_test.md`.
 ### Demo publik dari laptop (paling cepat, gratis)
 
 ```powershell
-cd speakfix
+cd speech-grammar
 powershell -ExecutionPolicy Bypass -File scripts\run_public_demo.ps1
 ```
 
 Skrip ini:
 - menolak berjalan jika port 8000 sudah dipakai program lain, supaya tunnel tidak membuka server yang salah;
 - memperingatkan jika *commit memory* yang bebas di bawah 6 GB;
-- menjalankan SpeakFix di `127.0.0.1` (tidak bisa diakses langsung dari Wi-Fi), dengan GPU, 2 worker, rate limit
+- menjalankan Speech Grammar di `127.0.0.1` (tidak bisa diakses langsung dari Wi-Fi), dengan GPU, 2 worker, rate limit
   600/menit per IP, antrean 32, dan **mode demo** (banner "gunakan suara orang dewasa", teks persetujuan untuk
   orang dewasa);
 - membuka *Cloudflare Quick Tunnel* dan menampilkan link `https://<acak>.trycloudflare.com` yang bisa
@@ -627,8 +630,8 @@ image berisi model v2 dan Whisper `base.en`, dan `vercel.json` memakai runtime c
 
    ```powershell
    .\.venv\Scripts\hf.exe auth login
-   .\.venv\Scripts\hf.exe upload <user>/speakfix-t5-gec-v2-ct2 models\t5-gec-v2-ct2 .
-   .\.venv\Scripts\hf.exe upload <user>/speakfix-t5-gec-v2-ct2 docker\model-card.md README.md
+   .\.venv\Scripts\hf.exe upload <user>/speech-grammar-t5-gec-v2-ct2 models\t5-gec-v2-ct2 .
+   .\.venv\Scripts\hf.exe upload <user>/speech-grammar-t5-gec-v2-ct2 docker\model-card.md README.md
    ```
 
    Lisensinya CC BY-NC-SA 4.0, mengikuti lisensi JFLEG (lihat `docker/model-card.md`). Jika nama repo berbeda, ubah
@@ -638,7 +641,7 @@ image berisi model v2 dan Whisper `base.en`, dan `vercel.json` memakai runtime c
 
 Bedanya dengan server biasa:
 
-- **Model dimuat saat dibutuhkan** (`SPEAKFIX_LOAD_MODELS_ON_DEMAND=true`). Vercel menjeda server setelah request
+- **Model dimuat saat dibutuhkan** (`SPEECH_GRAMMAR_LOAD_MODELS_ON_DEMAND=true`). Vercel menjeda server setelah request
   selesai, jadi pemuatan di background bisa terhenti. Request yang sedang menunggu membuat server tetap berjalan.
 - **Halaman mulai memuat model sejak dibuka.** Halaman langsung memanggil `POST /v1/warmup`, jadi waktu tunggunya
   terpakai selagi pengunjung membaca atau merekam. Kalau satu permintaan lebih dari 8 detik, halaman menjelaskan
@@ -669,7 +672,7 @@ pernah di-build, dan aplikasi belum pernah dijalankan di Vercel.
 ### Docker (server permanen)
 
 ```bash
-cp .env.example .env               # isi SPEAKFIX_API_KEYS dan GRAFANA_ADMIN_PASSWORD
+cp .env.example .env               # isi SPEECH_GRAMMAR_API_KEYS dan GRAFANA_ADMIN_PASSWORD
 docker compose up -d --build                                  # API CPU di :8000
 docker compose --profile gpu up -d --build api-gpu            # API GPU di :8001 (NVIDIA Container Toolkit)
 docker compose --profile monitoring up -d                     # Prometheus :9090, Grafana :3000
@@ -702,10 +705,10 @@ Isi image dan container:
 
 Checklist produksi:
 
-- [ ] Isi `SPEAKFIX_API_KEYS` dengan key acak:
+- [ ] Isi `SPEECH_GRAMMAR_API_KEYS` dengan key acak:
       `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
 - [ ] Pasang reverse proxy HTTPS (Caddy/nginx) di depan, lalu set `FORWARDED_ALLOW_IPS` ke IP proxy.
-- [ ] Isi `SPEAKFIX_CORS_ORIGINS` hanya dengan domain aplikasi Anda.
+- [ ] Isi `SPEECH_GRAMMAR_CORS_ORIGINS` hanya dengan domain aplikasi Anda.
 - [ ] Jalankan 1 worker per container dan scale dengan menambah replika. Setiap worker memuat model
       sendiri, jadi jangan memakai `--workers`.
 - [ ] Rate limiter dan antrean job bersifat per-instance. Untuk banyak replika, pindahkan rate limit ke
@@ -714,7 +717,7 @@ Checklist produksi:
 - [ ] Simpan backup model **di luar laptop** (Google Drive, OneDrive, atau repo privat Hugging Face).
       `python scripts/backup_models.py --name t5-gec-v2 --out-dir <folder>` membuat satu zip berisi model
       HF dan CTranslate2 beserta manifest, lalu memverifikasi checksum-nya. Untuk memulihkan, ekstrak zip
-      ke folder `speakfix/`.
+      ke folder `speech-grammar/`.
 - [x] API key Gemini lama yang pernah tertulis di `GEMINI2.0.py` sudah diblokir Google sebagai key bocor
       (dicek 8 Oktober 2026: HTTP 403 *"Your API key was reported as leaked"*). Key itu tidak bisa dipakai
       lagi. Menghapusnya dari project pemiliknya hanya untuk kebersihan.
@@ -725,14 +728,14 @@ Checklist produksi:
 
 | Metrik | Isi |
 |---|---|
-| `speakfix_http_requests_total`, `speakfix_http_request_duration_seconds` | Per template route |
-| `speakfix_stage_duration_seconds{stage}` | `decode`, `preprocess`, `stt`, `correct` |
-| `speakfix_inference_inflight`, `speakfix_jobs{state}` | Beban inferensi dan antrean job |
-| `speakfix_inference_errors_total{component,kind}`, `speakfix_fallbacks_total` | OOM, timeout, fallback |
-| `speakfix_process_resident_memory_bytes`, `speakfix_model_ready`, `speakfix_model_info` | Memori dan status model |
-| `speakfix_audio_duration_seconds`, `speakfix_rate_limited_total` | Durasi klip dan rate limit |
+| `speech_grammar_http_requests_total`, `speech_grammar_http_request_duration_seconds` | Per template route |
+| `speech_grammar_stage_duration_seconds{stage}` | `decode`, `preprocess`, `stt`, `correct` |
+| `speech_grammar_inference_inflight`, `speech_grammar_jobs{state}` | Beban inferensi dan antrean job |
+| `speech_grammar_inference_errors_total{component,kind}`, `speech_grammar_fallbacks_total` | OOM, timeout, fallback |
+| `speech_grammar_process_resident_memory_bytes`, `speech_grammar_model_ready`, `speech_grammar_model_info` | Memori dan status model |
+| `speech_grammar_audio_duration_seconds`, `speech_grammar_rate_limited_total` | Durasi klip dan rate limit |
 
-Dashboard Grafana *SpeakFix* (11 panel) dan aturan alert ter-provision otomatis. Alert mencakup
+Dashboard Grafana *Speech Grammar* (11 panel) dan aturan alert ter-provision otomatis. Alert mencakup
 instance down, model tidak siap, p95 di atas 8 detik, error 5xx di atas 5%, OOM, dan RSS di atas
 2,5 GB.
 
@@ -775,7 +778,7 @@ Log ditulis sebagai JSON per baris (structlog) dengan `request_id`. Nilai field 
 - **Gemini API tidak boleh dipakai untuk layanan anak.** Ketentuan Gemini API melarang pemakaiannya di
   layanan yang ditujukan untuk, atau kemungkinan diakses oleh, pengguna di bawah 18 tahun. Pada tier gratis,
   input juga dipakai Google untuk mengembangkan produknya dan bisa dibaca reviewer manusia. Adapter Gemini
-  hanya untuk eksperimen dengan suara orang dewasa, bukan untuk produksi SpeakFix.
+  hanya untuk eksperimen dengan suara orang dewasa, bukan untuk produksi Speech Grammar.
 
 ---
 
@@ -784,7 +787,7 @@ Log ditulis sebagai JSON per baris (structlog) dengan `request_id`. Nilai field 
 ```powershell
 pytest -m "not slow"          # 178 test cepat, tanpa model (dipakai CI)
 pytest                        # + 7 test dengan model asli / ERRANT (dilewati jika belum terpasang)
-pytest --cov=speakfix         # coverage 91% (84% di CI, tanpa model)
+pytest --cov=speech_grammar         # coverage 91% (84% di CI, tanpa model)
 ruff check src tests scripts ; ruff format --check src tests scripts
 mypy src                      # mode strict, 0 error
 ```
@@ -849,7 +852,7 @@ Skenario uji manual untuk tim ada di `reports/pre_test_check.md`.
 
   Beam 5 menjadi default. Klien bisa menurunkannya per request lewat `num_beams` bila latensi lebih
   penting.
-- **`SPEAKFIX_WHISPER_MODEL=auto`**: `small.en` di GPU (hasil terbaik dan stabil, tetap cepat), `base.en` di CPU
+- **`SPEECH_GRAMMAR_WHISPER_MODEL=auto`**: `small.en` di GPU (hasil terbaik dan stabil, tetap cepat), `base.en` di CPU
   (hasilnya bertumpang tindih dengan `small.en`, tetapi jauh lebih cepat).
 - **Faithfulness guard dan tanda baca akhir**: keduanya diambil dari bukti eksperimen (lihat bagian
   Hasil). Guard hanya aktif pada 0,3% kalimat JFLEG.
@@ -861,16 +864,16 @@ Skenario uji manual untuk tim ada di `reports/pre_test_check.md`.
 - **Log `ct2_cuda_unavailable_using_cpu` / `whisper_cuda_unavailable_using_cpu`**, atau `/v1/info`
   menunjukkan `@cpu` padahal ada GPU: library CUDA tidak bisa dimuat, sehingga service otomatis memakai
   CPU. Di Windows, pasang PyTorch CUDA di venv
-  (`pip install torch --index-url https://download.pytorch.org/whl/cu128`). SpeakFix akan memakai
+  (`pip install torch --index-url https://download.pytorch.org/whl/cu128`). Speech Grammar akan memakai
   cuBLAS/cuDNN yang dibawanya. Alternatifnya, pasang CUDA 12 + cuDNN 9 atau pakai image Docker GPU.
 - **`TypeError: open() got an unexpected keyword argument 'metadata_errors'`** saat memanggil
-  `faster_whisper.decode_audio` langsung: helper itu tidak cocok dengan PyAV 19. SpeakFix tidak
-  terdampak karena memakai decoder sendiri (`speakfix.audio.decode`). Untuk script lain, kirim array
+  `faster_whisper.decode_audio` langsung: helper itu tidak cocok dengan PyAV 19. Speech Grammar tidak
+  terdampak karena memakai decoder sendiri (`speech_grammar.audio.decode`). Untuk script lain, kirim array
   NumPy ke `transcribe()`, bukan path file.
 - **Peringatan symlink huggingface_hub di Windows**: aman diabaikan, hanya membuat cache sedikit lebih
   besar.
 - **`/readyz` 503 dengan `FileNotFoundError`**: model belum disiapkan. Jalankan
-  `scripts/prepare_models.py`, atau set `SPEAKFIX_T5_MODEL_NAME=t5-gec`.
+  `scripts/prepare_models.py`, atau set `SPEECH_GRAMMAR_T5_MODEL_NAME=t5-gec`.
 - **Tombol rekam memberi pesan "mikrofon hanya lewat https://"**: browser memblokir mikrofon di alamat
   `http://` selain localhost, misalnya `http://192.168.x.x:8000`. Buka lewat link HTTPS (demo publik)
   atau `http://localhost:8000`, atau unggah file rekaman.
@@ -878,9 +881,9 @@ Skenario uji manual untuk tim ada di `reports/pre_test_check.md`.
   `powershell -ExecutionPolicy Bypass -File scripts\run_public_demo.ps1` (hanya untuk perintah itu).
 - **Kalimat yang jelas salah tidak dikoreksi, dengan catatan "sistem belum cukup yakin"**: filter
   keyakinan menahan saran yang ragu-ragu (lihat *Mengurangi koreksi keliru*). Turunkan
-  `SPEAKFIX_MIN_CORRECTION_MARGIN` (misalnya ke `1.0`) jika tim lebih memilih lebih banyak saran.
+  `SPEECH_GRAMMAR_MIN_CORRECTION_MARGIN` (misalnya ke `1.0`) jika tim lebih memilih lebih banyak saran.
 - **Banyak pengguna di satu Wi-Fi mendapat "Terlalu banyak permintaan" (429)**: rate limit dihitung per IP. Naikkan
-  `SPEAKFIX_RATE_LIMIT_PER_MINUTE`, seperti yang dilakukan skrip demo (600).
+  `SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE`, seperti yang dilakukan skrip demo (600).
 - **`run_public_demo.ps1`: "Port 8000 is already in use"**: masih ada server lain di port itu. Hentikan dulu, atau
   jalankan dengan `-Port <port lain>`.
 - **"Server sedang penuh" (503 `resource_exhausted`) atau peringatan commit memory**: memori Windows habis. Tutup
@@ -917,7 +920,7 @@ Baris pertama dan kelima di tabel atas menunjukkan batasan STT: Whisper sudah "m
 ada yang bisa dikoreksi. Di baris terakhir Whisper salah dengar, dan filter keyakinan menahan sarannya.
 
 Dibandingkan dengan dokumen tim (`FP/WHISPER DENGAN INPUT AUDIO.docx`), jarak kata ke Expected Output pada 10
-kalimat itu (159 kata): tanpa koreksi 43, hasil lama 17, SpeakFix 20 (GPU) dan 17 (CPU).
+kalimat itu (159 kata): tanpa koreksi 43, hasil lama 17, Speech Grammar 20 (GPU) dan 17 (CPU).
 Sepuluh kalimat dengan satu referensi terlalu sedikit untuk menentukan mana yang lebih baik, dan di sampel ini
 keduanya berdekatan. Perbandingan yang lebih kuat ada di data uji held-out (bagian Evaluasi).
 

@@ -1,7 +1,4 @@
-# CI for the speakfix service. Assumes speakfix/ is the repository root.
-# If you version the parent FPFIX folder instead, move this file to
-# FPFIX/.github/workflows/, add `defaults: {run: {working-directory: speakfix}}`
-# and prefix the docker context/file paths with `speakfix/`.
+# CI for the service. This folder is the repository root.
 name: ci
 
 on:
@@ -54,7 +51,7 @@ jobs:
           cache: pip
       - run: pip install ${{ matrix.pins }} -e ".[dev]"
       # Real-model tests are marked `slow` and skip themselves when models/ is absent.
-      - run: pytest -m "not slow" --cov=speakfix --cov-report=term --cov-report=xml --cov-fail-under=75
+      - run: pytest -m "not slow" --cov=speech_grammar --cov-report=term --cov-report=xml --cov-fail-under=75
       - uses: actions/upload-artifact@v4
         if: matrix.python == '3.12'
         with:
@@ -84,6 +81,6 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: false
-          tags: speakfix:ci
+          tags: speech-grammar:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

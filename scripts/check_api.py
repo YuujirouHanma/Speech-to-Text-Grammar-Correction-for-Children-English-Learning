@@ -1,11 +1,11 @@
-"""End-to-end check of a running SpeakFix server, over real HTTP.
+"""End-to-end check of a running Speech Grammar server, over real HTTP.
 
 Sends the team's recordings to the server and compares the results with the Expected Output of
 ``FP/WHISPER DENGAN INPUT AUDIO.docx``, then checks the audio formats browsers send, every
 endpoint, the error paths, unusual inputs and the per-visitor rate limit. Prints PASS/FAIL per
 check, writes everything to a JSON report and exits with status 1 if a check failed.
 
-    python -m speakfix                     # in another terminal
+    python -m speech_grammar                     # in another terminal
     python scripts/check_api.py http://127.0.0.1:8000 --out reports/check_api.json
 
 Through a tunnel (scripts/run_public_demo.ps1) pass ``--skip-rate-limit``: the tunnel sets the
@@ -348,11 +348,11 @@ def check_endpoints(server: Server, fp_dir: Path, voice: Path) -> None:
     check("healthz", client.get("/healthz").status_code == 200)
     check("readyz", client.get("/readyz").status_code == 200)
     metrics = client.get("/metrics").text
-    check("metrics tersedia", "speakfix_" in metrics)
+    check("metrics tersedia", "speech_grammar_" in metrics)
     errors = [
         line
         for line in metrics.splitlines()
-        if line.startswith("speakfix_inference_errors_total") and not line.endswith(" 0.0")
+        if line.startswith("speech_grammar_inference_errors_total") and not line.endswith(" 0.0")
     ]
     check("metrics: tidak ada error inferensi", not errors, errors[:3])
     check("docs", client.get("/docs").status_code == 200)

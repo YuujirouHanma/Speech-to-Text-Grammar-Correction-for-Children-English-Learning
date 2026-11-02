@@ -1,7 +1,7 @@
 import pytest
 
-from speakfix.text.edits import describe_error_type, extract_edits
-from speakfix.text.normalize import (
+from speech_grammar.text.edits import describe_error_type, extract_edits
+from speech_grammar.text.normalize import (
     detokenize,
     ensure_terminal_punctuation,
     faithfulness,
