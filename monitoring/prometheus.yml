@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: speakfix
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api:8000"]
+        labels: { flavor: cpu }
+      - targets: ["api-gpu:8000"]
+        labels: { flavor: gpu }
+
+rule_files:
+  - /etc/prometheus/alerts.yml

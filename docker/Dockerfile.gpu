@@ -1,0 +1,58 @@
+# syntax=docker/dockerfile:1.7
+# GPU image: CUDA 12.8 + cuDNN 9 runtime (required by CTranslate2 4.x / faster-whisper).
+# Build:  docker build -f docker/Dockerfile.gpu -t speakfix:gpu .
+# Run:    docker run --gpus all -p 8000:8000 -v ./models:/models:ro speakfix:gpu
+# Host requirements: NVIDIA driver >= 570 and the NVIDIA Container Toolkit.
+
+ARG CUDA_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
+
+# ---------------------------------------------------------------- builder stage
+FROM ${CUDA_IMAGE} AS builder
+ENV DEBIAN_FRONTEND=noninteractive PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 python3-venv \
+ && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+WORKDIR /build
+COPY pyproject.toml README.md constraints.txt ./
+COPY src ./src
+# Optional features, see docker/Dockerfile (ERRANT error types on by default).
+ARG EXTRAS="errant"
+RUN pip install --upgrade pip wheel \
+ && if [ -n "${EXTRAS}" ]; then pip install -c constraints.txt ".[${EXTRAS}]"; else pip install -c constraints.txt .; fi \
+ && case ",${EXTRAS}," in *,errant,*) python -m spacy download en_core_web_sm ;; esac \
+ && find /opt/venv -name "__pycache__" -type d -prune -exec rm -rf {} +
+
+# ---------------------------------------------------------------- runtime stage
+FROM ${CUDA_IMAGE} AS runtime
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 libgomp1 \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd --system --uid 10001 --create-home --home-dir /home/app app
+
+ENV PATH="/opt/venv/bin:${PATH}" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HUB_OFFLINE=1 \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    SPEAKFIX_ENVIRONMENT=prod \
+    SPEAKFIX_MODELS_DIR=/models \
+    SPEAKFIX_DEVICE=cuda \
+    SPEAKFIX_CORRECTOR_BACKEND=ctranslate2 \
+    SPEAKFIX_CORRECTOR_FALLBACK_BACKEND=none \
+    SPEAKFIX_WHISPER_MODEL=small.en \
+    SPEAKFIX_INFERENCE_WORKERS=2 \
+    SPEAKFIX_TEMP_DIR=/tmp/speakfix
+
+COPY --from=builder /opt/venv /opt/venv
+WORKDIR /home/app
+USER app
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
+  CMD python3 -c "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)"
+
+CMD ["speakfix"]

@@ -1,0 +1,199 @@
+{
+  "model": "models\\t5-gec-v2-ct2",
+  "backend": "ctranslate2:int8_float32@cpu",
+  "validation": {
+    "learner": 238,
+    "correct": 328
+  },
+  "rows": [
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": -Infinity,
+      "errant_p_grammar": 0.598,
+      "errant_r_grammar": 0.5237,
+      "errant_f05_grammar": 0.5815,
+      "correct_changed": 0.1524,
+      "learner_unchanged": 0.2437
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 0.0,
+      "errant_p_grammar": 0.6132,
+      "errant_r_grammar": 0.5207,
+      "errant_f05_grammar": 0.5922,
+      "correct_changed": 0.1372,
+      "learner_unchanged": 0.2689
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 0.5,
+      "errant_p_grammar": 0.6347,
+      "errant_r_grammar": 0.5104,
+      "errant_f05_grammar": 0.6052,
+      "correct_changed": 0.0976,
+      "learner_unchanged": 0.2941
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 1.0,
+      "errant_p_grammar": 0.656,
+      "errant_r_grammar": 0.4866,
+      "errant_f05_grammar": 0.6133,
+      "correct_changed": 0.0671,
+      "learner_unchanged": 0.3361
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 1.5,
+      "errant_p_grammar": 0.6737,
+      "errant_r_grammar": 0.4718,
+      "errant_f05_grammar": 0.6206,
+      "correct_changed": 0.0579,
+      "learner_unchanged": 0.3655
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 2.0,
+      "errant_p_grammar": 0.6864,
+      "errant_r_grammar": 0.4632,
+      "errant_f05_grammar": 0.626,
+      "correct_changed": 0.0488,
+      "learner_unchanged": 0.4034
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 2.5,
+      "errant_p_grammar": 0.715,
+      "errant_r_grammar": 0.4469,
+      "errant_f05_grammar": 0.6384,
+      "correct_changed": 0.0305,
+      "learner_unchanged": 0.4454
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 3.0,
+      "errant_p_grammar": 0.7202,
+      "errant_r_grammar": 0.4344,
+      "errant_f05_grammar": 0.6364,
+      "correct_changed": 0.0274,
+      "learner_unchanged": 0.4664
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 4.0,
+      "errant_p_grammar": 0.7439,
+      "errant_r_grammar": 0.3812,
+      "errant_f05_grammar": 0.625,
+      "correct_changed": 0.0183,
+      "learner_unchanged": 0.5546
+    },
+    {
+      "punctuation_feedback": true,
+      "min_correction_margin": 5.0,
+      "errant_p_grammar": 0.7754,
+      "errant_r_grammar": 0.3354,
+      "errant_f05_grammar": 0.6142,
+      "correct_changed": 0.0122,
+      "learner_unchanged": 0.6471
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": -Infinity,
+      "errant_p_grammar": 0.5965,
+      "errant_r_grammar": 0.503,
+      "errant_f05_grammar": 0.5751,
+      "correct_changed": 0.122,
+      "learner_unchanged": 0.2941
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 0.0,
+      "errant_p_grammar": 0.6123,
+      "errant_r_grammar": 0.5,
+      "errant_f05_grammar": 0.586,
+      "correct_changed": 0.1128,
+      "learner_unchanged": 0.3193
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 0.5,
+      "errant_p_grammar": 0.6322,
+      "errant_r_grammar": 0.4896,
+      "errant_f05_grammar": 0.5974,
+      "correct_changed": 0.0823,
+      "learner_unchanged": 0.3403
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 1.0,
+      "errant_p_grammar": 0.6542,
+      "errant_r_grammar": 0.4659,
+      "errant_f05_grammar": 0.6052,
+      "correct_changed": 0.061,
+      "learner_unchanged": 0.3866
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 1.5,
+      "errant_p_grammar": 0.6726,
+      "errant_r_grammar": 0.451,
+      "errant_f05_grammar": 0.6124,
+      "correct_changed": 0.0518,
+      "learner_unchanged": 0.416
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 2.0,
+      "errant_p_grammar": 0.6857,
+      "errant_r_grammar": 0.4417,
+      "errant_f05_grammar": 0.6175,
+      "correct_changed": 0.0457,
+      "learner_unchanged": 0.4454
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 2.5,
+      "errant_p_grammar": 0.7158,
+      "errant_r_grammar": 0.425,
+      "errant_f05_grammar": 0.6296,
+      "correct_changed": 0.0305,
+      "learner_unchanged": 0.479
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 3.0,
+      "errant_p_grammar": 0.7213,
+      "errant_r_grammar": 0.4125,
+      "errant_f05_grammar": 0.6274,
+      "correct_changed": 0.0274,
+      "learner_unchanged": 0.5
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 4.0,
+      "errant_p_grammar": 0.7548,
+      "errant_r_grammar": 0.3656,
+      "errant_f05_grammar": 0.6223,
+      "correct_changed": 0.0183,
+      "learner_unchanged": 0.5882
+    },
+    {
+      "punctuation_feedback": false,
+      "min_correction_margin": 5.0,
+      "errant_p_grammar": 0.7786,
+      "errant_r_grammar": 0.3197,
+      "errant_f05_grammar": 0.605,
+      "correct_changed": 0.0122,
+      "learner_unchanged": 0.6681
+    }
+  ],
+  "best": {
+    "punctuation_feedback": false,
+    "min_correction_margin": 2.5,
+    "errant_p_grammar": 0.7158,
+    "errant_r_grammar": 0.425,
+    "errant_f05_grammar": 0.6296,
+    "correct_changed": 0.0305,
+    "learner_unchanged": 0.479
+  }
+}
