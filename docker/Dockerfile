@@ -4,6 +4,15 @@
 # Run:    docker run -p 8000:8000 -v ./models:/models:ro speech-grammar:cpu
 
 ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+ARG NODE_IMAGE=node:22-slim
+
+# ---------------------------------------------------------------- page stage
+FROM ${NODE_IMAGE} AS page
+WORKDIR /build/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend ./
+RUN npm run build
 
 # ---------------------------------------------------------------- builder stage
 FROM ${PYTHON_IMAGE} AS builder
@@ -14,6 +23,7 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
 COPY pyproject.toml README.md constraints.txt ./
 COPY src ./src
+COPY --from=page /build/src/speech_grammar/api/static ./src/speech_grammar/api/static
 # Optional features. ERRANT (error types in the learner feedback) is on by default;
 # --build-arg EXTRAS= builds a slimmer image without it, EXTRAS=errant,cloud adds cloud STT.
 ARG EXTRAS="errant"

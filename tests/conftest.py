@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
+from speech_grammar.api import app as app_module
 from speech_grammar.api.app import create_app
 from speech_grammar.config import Settings
 from speech_grammar.domain.errors import ResourceExhaustedError
@@ -172,7 +173,15 @@ def make_container(
 
 
 @pytest.fixture
-def app_factory() -> Iterator[Callable[..., TestClient]]:
+def app_factory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> Iterator[Callable[..., TestClient]]:
+    # The real page is built from frontend/ and is not in git, so the tests serve a stand-in.
+    static = tmp_path / "static"
+    (static / "assets").mkdir(parents=True)
+    (static / "index.html").write_text("<title>Stand-in page</title>", encoding="utf-8")
+    (static / "assets" / "index-abc123.js").write_text("// stand-in", encoding="utf-8")
+    monkeypatch.setattr(app_module, "STATIC_DIR", static)
     clients: list[TestClient] = []
 
     def factory(

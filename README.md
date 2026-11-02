@@ -115,7 +115,7 @@ Alur satu request `/v1/audio/analyze`:
 ```
 speech-grammar/
 ├── src/speech_grammar/
-│   ├── api/          app factory, routes, schemas, middleware, deps, static UI
+│   ├── api/          app factory, routes, schemas, middleware, deps (static/: hasil build halaman, tidak di-commit)
 │   ├── services/     analysis, corrector, transcriber, jobs, privacy, ratelimit, container
 │   ├── inference/    t5_ct2, t5_torch, whisper_stt, cloud_stt, devices, factory
 │   ├── audio/        validation, decode, preprocess, encode
@@ -124,11 +124,12 @@ speech-grammar/
 │   ├── config.py     semua pengaturan (env SPEECH_GRAMMAR_*)
 │   ├── logs.py       structlog + redaksi data anak
 │   └── metrics.py    metrik Prometheus
+├── frontend/         halaman web: React, Vite, TypeScript, Tailwind
 ├── scripts/          prepare_models, train_t5, evaluate_gec (+ gec_metrics), calibrate_correction, evaluate_stt,
 │                     benchmark, load_test, check_api, check_browser, run_public_demo, backup_models,
 │                     freeze_constraints
 ├── constraints.txt   versi dependensi yang sudah teruji (dipakai Docker, CI, dan setup lokal)
-├── tests/            unit/ dan integration/ (185 test)
+├── tests/            unit/ dan integration/ (186 test)
 ├── docker/           Dockerfile (CPU), Dockerfile.gpu (CUDA 12.8), model-card.md
 ├── Dockerfile.vercel image untuk Vercel, model ikut di dalamnya (+ vercel.json)
 ├── monitoring/       prometheus.yml, alerts.yml, dashboard Grafana
@@ -140,8 +141,8 @@ speech-grammar/
 
 ## Menjalankan secara lokal
 
-Prasyarat: Python 3.12 untuk versi terkunci (`constraints.txt`; Python 3.10–3.11 tetap bisa tanpa lock).
-GPU tidak wajib.
+Prasyarat: Python 3.12 untuk versi terkunci (`constraints.txt`; Python 3.10–3.11 tetap bisa tanpa lock) dan Node.js 22
+untuk halaman web. GPU tidak wajib.
 
 ```powershell
 git clone https://github.com/YuujirouHanma/Speech-to-Text-Grammar-Correction-for-Children-English-Learning.git speech-grammar
@@ -157,14 +158,17 @@ python scripts/prepare_models.py whisper --whisper base.en                 # -> 
 python scripts/prepare_models.py whisper --whisper small.en                # dipakai otomatis jika ada GPU
 # 2) (disarankan) latih ulang v2. Butuh GPU, ±3 menit (lihat bagian Training)
 
-# 3) Jalankan
+# 3) Build halaman web (ulangi setiap kali frontend/ berubah)
+cd frontend; npm ci; npm run build; cd ..
+
+# 4) Jalankan
 $env:HF_HUB_OFFLINE = "1"
 python -m speech_grammar
 ```
 
-Buka **http://localhost:8000** untuk UI demo (rekam, upload, atau ketik) atau **/docs** untuk
-dokumentasi API interaktif. Model dimuat di background: `/healthz` langsung merespons 200, sedangkan
-`/readyz` baru merespons 200 setelah model siap.
+Buka **http://localhost:8000** untuk halaman web (rekam, upload, atau ketik) atau **/docs** untuk
+dokumentasi API interaktif. Tanpa langkah 3, API tetap berjalan tetapi `/` belum punya halaman. Model dimuat di
+background: `/healthz` langsung merespons 200, sedangkan `/readyz` baru merespons 200 setelah model siap.
 
 Kalau model v2 belum dibuat, pakai model asli: `$env:SPEECH_GRAMMAR_T5_MODEL_NAME = "t5-gec"`.
 
@@ -180,6 +184,29 @@ Kalau model v2 belum dibuat, pakai model asli: `$env:SPEECH_GRAMMAR_T5_MODEL_NAM
 > Jalur PyTorch sudah diuji di RTX 4070 Laptop: Whisper base.en 6× lebih cepat dan T5 3× lebih
 > cepat untuk paragraf (lihat Benchmark). Jalur wheel `nvidia-*` belum diuji. Untuk GPU produksi,
 > gunakan image Docker Linux.
+
+### Mengubah halaman web
+
+Kode halaman ada di `frontend/`. Image Docker mem-build-nya sendiri, dan FastAPI melayani hasilnya dari
+`src/speech_grammar/api/static/`.
+
+```powershell
+cd frontend
+npm ci
+npm run dev                # http://localhost:5173, API diteruskan ke server lokal di port 8000
+$env:API_TARGET = "https://voicegrammar.vercel.app"; npm run dev    # atau ke layanan yang sudah online
+npm run lint               # cek tipe TypeScript
+npm run build
+```
+
+- **CSP server ketat** (`script-src 'self'; style-src 'self'`), jadi script dan style inline, CDN, serta Google Fonts
+  diblokir. Fon ikut di dalam build lewat paket `@fontsource`. `npm run dev` tidak memakai CSP ini, jadi cek hasil akhir
+  lewat `npm run build` dengan `scripts/check_browser.py`.
+- **Halaman hanya menampilkan yang dikerjakan model**: transkrip Whisper, koreksi T5, dan penjelasan per kesalahan.
+  Hanya bahasa Inggris, tanpa skor, tanpa pilihan gaya bahasa, dan tanpa teks langsung saat bicara, karena rekaman baru
+  dikirim setelah selesai.
+- **Riwayat kalimat** disimpan di `localStorage` browser pengunjung, tanpa audio. Suara pelafalan memakai suara bawaan
+  browser, bukan server.
 
 ---
 
@@ -610,7 +637,7 @@ Skrip ini:
 - menghentikan server dan tunnel saat Anda menekan **Ctrl+C**.
 
 Sudah diuji 2 November 2026 lewat link publik: semua endpoint dan jalur error, 15 rekaman (median
-458 ms), serta UI di Edge (52/52), Firefox (53/53), dan WebKit (43/43), termasuk merekam
+458 ms), serta halaman versi sebelum `frontend/` di Edge (52/52), Firefox (53/53), dan WebKit (43/43), termasuk merekam
 dari mikrofon tiruan di Edge. Setelah Ctrl+C, link berhenti berfungsi. Tunnel meneruskan IP asli pengunjung
 (`X-Forwarded-For`), sehingga rate limit berlaku per pengunjung, dan log server tidak memuat isi kalimat maupun IP.
 
@@ -623,7 +650,8 @@ layanan permanen, gunakan Vercel atau Docker di server (di bawah).
 
 ### Vercel (link permanen gratis, untuk portofolio)
 
-Untuk pengunjung sedikit dan tanpa server sendiri: laptop boleh mati, dan linknya tetap. `Dockerfile.vercel` membuat
+Online di **https://voicegrammar.vercel.app**. Untuk pengunjung sedikit dan tanpa server sendiri: laptop boleh mati, dan
+linknya tetap. `Dockerfile.vercel` membuat
 image berisi model v2 dan Whisper `base.en`, dan `vercel.json` memakai runtime container Vercel (masih beta).
 
 1. Unggah model ke Hugging Face. Repo-nya harus publik, karena Vercel mengunduhnya tanpa token saat build:
@@ -665,9 +693,9 @@ Uji lokal 2 November 2026 dengan model asli dan pengaturan image ini, dibatasi k
 | 10 pengguna, jeda 15 detik | p95 3,26 detik; 1 dari 27 gagal saat pengaman memori alat uji mematikan server |
 | Memori setelah model dimuat (RSS) | Sekitar 1 GB |
 
-Dengan angka ini, 4 jam CPU setara sekitar 13.000 rekaman 5 detik per bulan. Hasil di Vercel kemungkinan lebih lambat:
-vCPU-nya bisa lebih lemah dari inti laptop, dan waktu menyalakan container belum termasuk. `Dockerfile.vercel` belum
-pernah di-build, dan aplikasi belum pernah dijalankan di Vercel.
+Dengan angka ini, 4 jam CPU setara sekitar 13.000 rekaman 5 detik per bulan. Di Vercel lebih lambat. Uji langsung dari
+laptop pengembang pada 2 November 2026, sesudah model dimuat: kalimat diketik sekitar 0,65 detik (0,22 detik di server),
+dan klip sintetis 3,9 detik 3,2–3,6 detik (1,8–2,3 detik di server). Lama menunggu saat server baru bangun belum diukur.
 
 ### Docker (server permanen)
 
@@ -700,7 +728,7 @@ Isi image dan container:
   Docker biasa tidak me-restart container *unhealthy*, jadi gunakan orkestrator atau `autoheal`.
 
 > Job `docker` di CI berhasil mem-build image CPU (2 November 2026), tetapi image-nya belum pernah dijalankan karena
-> Docker tidak terpasang di laptop pengembang. Isi image CPU sudah diuji di venv bersih tanpa PyTorch dan tanpa editable
+> Docker tidak terpasang di laptop pengembang. Yang sudah berjalan sungguhan hanya image `Dockerfile.vercel`, di Vercel. Isi image CPU sudah diuji di venv bersih tanpa PyTorch dan tanpa editable
 > install (`reports/e2e_recordings.md`, `reports/load_test.md`). Image GPU belum pernah di-build.
 
 Checklist produksi:
@@ -785,7 +813,7 @@ Log ditulis sebagai JSON per baris (structlog) dengan `request_id`. Nilai field 
 ## Kualitas kode & testing
 
 ```powershell
-pytest -m "not slow"          # 178 test cepat, tanpa model (dipakai CI)
+pytest -m "not slow"          # 179 test cepat, tanpa model (dipakai CI)
 pytest                        # + 7 test dengan model asli / ERRANT (dilewati jika belum terpasang)
 pytest --cov=speech_grammar         # coverage 91% (84% di CI, tanpa model)
 ruff check src tests scripts ; ruff format --check src tests scripts
@@ -806,6 +834,7 @@ CI (`.github/workflows/ci.yml`) menjalankan:
 - test di Python 3.12 dengan versi terkunci (yang benar-benar dipakai Docker), dengan coverage minimal 75%;
 - test di Python 3.11 dengan versi terbaru, sebagai deteksi dini jika ada library baru yang merusak;
 - `pip-audit` pada versi terkunci (hanya informasi, tidak menggagalkan CI);
+- cek tipe dan build halaman web;
 - build image Docker CPU.
 
 Hasil `pip-audit` 1 November 2026 pada versi terkunci:
@@ -826,6 +855,10 @@ python scripts/check_api.py http://127.0.0.1:8000       # rekaman tim, format au
 pip install playwright; playwright install firefox webkit
 python scripts/check_browser.py http://127.0.0.1:8000 --engine msedge    # juga: firefox, webkit, chrome
 ```
+
+Halaman `frontend/` diuji 2 November 2026 dengan model di Vercel dan suara sintetis sebagai mikrofon tiruan: Edge 80 dari
+80, Firefox 81 dari 81. WebKit lulus 47 pengecekan tanpa gagal, lalu terhenti karena memori laptop kurang, dan alur
+rekamnya memang dilewati. Mikrofon sungguhan belum dicoba.
 
 Skenario uji manual untuk tim ada di `reports/pre_test_check.md`.
 
@@ -937,9 +970,9 @@ keduanya berdekatan. Perbandingan yang lebih kuat ada di data uji held-out (bagi
   *"Akan nasi goreng and I like apples."*. Kalimat bahasa Indonesia penuh biasanya dibiarkan apa adanya, tetapi hasilnya tidak dijamin.
 - **Whisper hanya bahasa Inggris** (`base.en`/`small.en`), dan kadang menormalkan kesalahan atau salah dengar
   (lihat [Evaluasi speech-to-text](#evaluasi-speech-to-text)).
-- **Image Docker belum pernah dijalankan.** CI berhasil mem-build image CPU, tetapi Docker tidak terpasang di laptop
-  pengembang. Isi image CPU sudah diuji di venv bersih di Windows (paket dan pengaturan yang sama). Image GPU dan
-  `Dockerfile.vercel` belum pernah di-build.
+- **Image Docker CPU dan GPU belum pernah dijalankan.** CI berhasil mem-build image CPU, tetapi Docker tidak terpasang
+  di laptop pengembang. Isi image CPU sudah diuji di venv bersih di Windows (paket dan pengaturan yang sama). Image GPU
+  belum pernah di-build. Hanya image `Dockerfile.vercel` yang berjalan sungguhan, di Vercel.
 - **Perekaman dari HP sungguhan belum diuji** (lihat bagian Demo publik).
 - Tipe kesalahan (ERRANT) sudah diuji di laptop pengembang (errant 3.0.2, spaCy 3.8). Pengujian ini
   menemukan bug: teks dulu dipecah per spasi saja, sehingga *don't → doesn't* diberi label `R:OTHER` dan

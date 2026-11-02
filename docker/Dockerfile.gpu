@@ -5,6 +5,15 @@
 # Host requirements: NVIDIA driver >= 570 and the NVIDIA Container Toolkit.
 
 ARG CUDA_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
+ARG NODE_IMAGE=node:22-slim
+
+# ---------------------------------------------------------------- page stage
+FROM ${NODE_IMAGE} AS page
+WORKDIR /build/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend ./
+RUN npm run build
 
 # ---------------------------------------------------------------- builder stage
 FROM ${CUDA_IMAGE} AS builder
@@ -17,6 +26,7 @@ ENV PATH="/opt/venv/bin:${PATH}"
 WORKDIR /build
 COPY pyproject.toml README.md constraints.txt ./
 COPY src ./src
+COPY --from=page /build/src/speech_grammar/api/static ./src/speech_grammar/api/static
 # Optional features, see docker/Dockerfile (ERRANT error types on by default).
 ARG EXTRAS="errant"
 RUN pip install --upgrade pip wheel \

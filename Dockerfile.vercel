@@ -4,6 +4,15 @@
 # project settings.
 
 ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+ARG NODE_IMAGE=node:22-slim
+
+# ---------------------------------------------------------------- page stage
+FROM ${NODE_IMAGE} AS page
+WORKDIR /build/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend ./
+RUN npm run build
 
 # ---------------------------------------------------------------- builder stage
 FROM ${PYTHON_IMAGE} AS builder
@@ -14,6 +23,7 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
 COPY pyproject.toml README.md constraints.txt ./
 COPY src ./src
+COPY --from=page /build/src/speech_grammar/api/static ./src/speech_grammar/api/static
 RUN pip install --upgrade pip wheel \
  && pip install -c constraints.txt ".[errant]" \
  && python -m spacy download en_core_web_sm \

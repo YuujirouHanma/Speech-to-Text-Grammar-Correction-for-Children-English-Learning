@@ -105,6 +105,8 @@ def create_app(
         @app.get("/", include_in_schema=False)
         async def index() -> FileResponse:
             return FileResponse(STATIC_DIR / "index.html")
+    elif settings.enable_ui:
+        log.warning("ui_not_built", hint="cd frontend; npm ci; npm run build")
 
     if settings.cors_origins:
         app.add_middleware(

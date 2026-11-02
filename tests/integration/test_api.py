@@ -1,8 +1,11 @@
 import time
 from collections.abc import Callable
+from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
+from speech_grammar.api import app as app_module
 from tests.conftest import FakeBackend, FakeSTT, make_wav
 
 Factory = Callable[..., TestClient]
@@ -50,9 +53,20 @@ class TestOps:
     def test_ui_served_with_csp(self, client: TestClient) -> None:
         response = client.get("/")
         assert response.status_code == 200
-        assert "Speech to Text Grammar Correction" in response.text
+        assert "Stand-in page" in response.text
         assert "default-src 'self'" in response.headers["Content-Security-Policy"]
-        assert client.get("/static/app.js").status_code == 200
+        assert response.headers["Cache-Control"] == "no-cache"
+        asset = client.get("/static/assets/index-abc123.js")
+        assert asset.status_code == 200
+        assert "immutable" in asset.headers["Cache-Control"]
+
+    def test_api_runs_without_a_built_page(
+        self, app_factory: Factory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(app_module, "STATIC_DIR", tmp_path / "not-built")
+        client = app_factory()
+        assert client.get("/").status_code == 404
+        assert client.get("/healthz").status_code == 200
 
 
 class TestTextEndpoint:
