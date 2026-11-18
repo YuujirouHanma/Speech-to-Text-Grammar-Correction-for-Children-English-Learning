@@ -60,6 +60,8 @@ speech-grammar = "speech_grammar.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/speech_grammar"]
+# Git ignores the built page, but the package has to contain it.
+artifacts = ["src/speech_grammar/api/static/**"]
 
 [tool.ruff]
 line-length = 100

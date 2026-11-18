@@ -20,6 +20,7 @@ log = get_logger("speech_grammar.http")
 
 _REQUEST_ID = re.compile(r"^[A-Za-z0-9_.-]{8,64}$")
 _QUIET_ROUTES = frozenset({"/metrics", "/healthz", "/readyz"})
+_UI_ASSETS = "/static/assets/"  # the build puts a hash of the content in these file names
 _UI_CSP = (
     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
     "media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; "
@@ -67,6 +68,12 @@ class RequestContextMiddleware:
                     headers.setdefault(key, value)
                 if is_ui:
                     headers.setdefault("Content-Security-Policy", _UI_CSP)
+                    # A page kept in a cache would go on asking for the assets of an older build.
+                    immutable = path.startswith(_UI_ASSETS)
+                    headers.setdefault(
+                        "Cache-Control",
+                        "public, max-age=31536000, immutable" if immutable else "no-cache",
+                    )
                 else:
                     headers.setdefault("Cache-Control", "no-store")
             await send(message)

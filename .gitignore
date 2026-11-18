@@ -15,6 +15,10 @@ dist/
 coverage.xml
 htmlcov/
 
+# The page: its dependencies, and the build that FastAPI serves (cd frontend; npm run build)
+node_modules/
+src/speech_grammar/api/static/
+
 # Models are large artifacts: prepare them with scripts/prepare_models.py
 models/
 

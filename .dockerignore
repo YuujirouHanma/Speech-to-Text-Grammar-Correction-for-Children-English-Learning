@@ -20,4 +20,6 @@ docker-compose.yml
 **/*.wav
 **/*.mp3
 backups
+frontend/node_modules
+src/speech_grammar/api/static
 .tools

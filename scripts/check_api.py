@@ -362,7 +362,12 @@ def check_endpoints(server: Server, fp_dir: Path, voice: Path) -> None:
         "UI + header keamanan",
         page.status_code == 200 and "content-security-policy" in page.headers,
     )
-    check("static app.js", client.get("/static/app.js").status_code == 200)
+    assets = re.findall(r"/static/assets/[^\"]+", page.text)
+    check(
+        "aset halaman tersedia",
+        bool(assets) and all(client.get(asset).status_code == 200 for asset in assets),
+        assets,
+    )
 
 
 def wav_bytes(seconds: float, tone: bool = False) -> bytes:

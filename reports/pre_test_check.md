@@ -49,11 +49,11 @@ dicoba, jadi di situlah temuan baru paling mungkin muncul.
 | # | Langkah | Yang diharapkan |
 |---|---|---|
 | 1 | Buka link, baca halaman | Banner "Mode demo", teks persetujuan orang dewasa |
-| 2 | Ketik `My mother cook rice every morning.` | Saran "cooks", kata "cook" disorot, penjelasan Bahasa Indonesia |
+| 2 | Ketik `My mother cook rice every morning.` | Saran "cooks", kata "cook" dicoret, penjelasan Bahasa Indonesia |
 | 3 | Ketik `She goes to school every day.` | "Bagus! Tidak ada kesalahan yang terdeteksi." |
 | 4 | Ketik `I am agree with your opinion.` | Tidak ada pujian, catatan "sistem belum cukup yakin" |
-| 5 | Tekan "Mulai rekam" tanpa mencentang persetujuan | Diminta mencentang persetujuan |
-| 6 | Centang, rekam `They is here today.`, tekan "Berhenti" | Rekaman bisa diputar, transkrip dan saran "are" muncul |
+| 5 | Tekan tombol mikrofon tanpa mencentang persetujuan | Diminta mencentang persetujuan |
+| 6 | Centang, rekam `They is here today.`, tekan tombol mikrofon lagi | Rekaman bisa diputar, transkrip dan saran "are" muncul |
 | 7 | Rekam sampai timer habis (59 detik) | Berhenti sendiri dan tetap diproses |
 | 8 | Tolak izin mikrofon di browser | Pesan "Izin mikrofon ditolak..." |
 | 9 | Unggah mp3 atau m4a kalimat salah | Transkrip dan saran muncul |
