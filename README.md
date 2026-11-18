@@ -677,6 +677,9 @@ Bedanya dengan server biasa:
 - **Batas input lebih kecil.** Vercel menolak request di atas 4,5 MB, jadi image memakai batas upload 4 MB. Rate limit-nya
   30 per menit per IP, karena kuota CPU dipakai bersama semua pengunjung.
 - **Job async (`/v1/jobs`) tidak bisa diandalkan** karena server dijeda di antara request. UI tidak memakainya.
+- **Filter keyakinan lebih longgar** (`SPEECH_GRAMMAR_MIN_CORRECTION_MARGIN=1.0`, default 2,5), karena pengunjung demo
+  sengaja mencoba kalimat sulit. Di data validasi, kalimat salah yang dibiarkan turun dari 44,5% ke 33,6%, tetapi kalimat
+  benar yang keliru diubah naik dari 3,0% ke 6,7%. Angka evaluasi di bagian atas README tetap memakai 2,5.
 
 Batas paket gratis Vercel (dicek 2 November 2026): 1 vCPU, 2 GB, dan 4 jam CPU per bulan. Kalau kuota habis, layanan
 bisa berhenti sampai 30 hari. Server dimatikan setelah 5 menit tanpa request.

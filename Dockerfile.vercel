@@ -44,6 +44,9 @@ RUN apt-get update \
  && useradd --system --uid 10001 --create-home --home-dir /home/app app
 
 # One small CPU, a 4.5 MB request limit, and a CPU quota that every visitor shares.
+# Visitors try hard sentences on purpose, so fewer suggestions are held back than with the
+# default margin of 2.5 (validation split, reports/correction_calibration.json: learner sentences
+# left unchanged 44.5% -> 33.6%, correct sentences changed 3.0% -> 6.7%).
 ENV PATH="/opt/venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -61,7 +64,8 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     SPEECH_GRAMMAR_LOAD_MODELS_ON_DEMAND=true \
     SPEECH_GRAMMAR_DEMO_MODE=true \
     SPEECH_GRAMMAR_MAX_UPLOAD_MB=4 \
-    SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE=30
+    SPEECH_GRAMMAR_RATE_LIMIT_PER_MINUTE=30 \
+    SPEECH_GRAMMAR_MIN_CORRECTION_MARGIN=1.0
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /models /models
